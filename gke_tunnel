@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# connecting to bastion-host
+
+
 connect_to_gke_mgmt() {
   
   PROJECT_ID="$1"
@@ -12,6 +13,17 @@ connect_to_gke_mgmt() {
     --no-user-output-enabled \
     -- -M -S /tmp/sslsock \
     -L 8888:localhost:8888 -N -q -f
+}
+
+check_shell() {
+  parent_process=$(ps -p $$ -o comm=)
+  if echo "$parent_process" | grep -q "zsh"; then
+      echo "Zsh"
+  elif echo "$parent_process" | grep -q "bash"; then
+      echo "Bash"
+  else
+      echo "Unknown shell"
+  fi
 }
 
 generate_aliases() {
@@ -30,7 +42,12 @@ EOF
 
 
 add_zsh_aliases() {
-  local ZSHRC="$HOME/.zshrc"
+  parent_process=$(ps -p $$ -o comm=)
+  if echo "$parent_process" | grep -q "zsh"; then
+    local ZSHRC="$HOME/.zshrc"
+  else
+    local ZSHRC="$HOME/.bashrc"
+  fi
   local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
   local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
 
@@ -39,16 +56,6 @@ add_zsh_aliases() {
   fi
 }
 
-# remove_zsh_aliases() {
-#   local ZSHRC="$HOME/.zshrc"
-#   local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
-#   local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
-
-#   if grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
-#     sed -i '' "/$ALIASES_BLOCK_START/,/$ALIASES_BLOCK_END/d" "$ZSHRC"
-#     source ~/.zshrc
-#   fi
-# }
 
 spinner() {
   local STEPS=("${@:1:$# / 2}")
@@ -111,8 +118,8 @@ STEPS=(
 CMDS=(
   "connect_to_gke_mgmt $PROJECT_ID"
   "gcloud container clusters get-credentials $GKE_CLUSTER --region=me-west1 --project=$PROJECT_ID --no-user-output-enabled"
-  "add_zsh_aliases"
+  "add_aliases"
 )
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
-echo "Aliases added to ~/.zshrc. Please run 'source ~/.zshrc' to apply the changes."
+echo "Aliases added. Please run 'source ~/.zshrc' or 'source ~/.bashrc' to apply the changes."
