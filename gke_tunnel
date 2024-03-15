@@ -44,15 +44,15 @@ EOF
 add_zsh_aliases() {
   parent_process=$(ps -p $$ -o comm=)
   if echo "$parent_process" | grep -q "zsh"; then
-    local ZSHRC="$HOME/.zshrc"
+    local RC_FILE="$HOME/.zshrc"
   else
-    local ZSHRC="$HOME/.bashrc"
+    local RC_FILE="$HOME/.bashrc"
   fi
   local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
   local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
 
-  if ! grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && ! grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
-    generate_aliases >> "$ZSHRC"
+  if ! grep -q "$ALIASES_BLOCK_START" "$RC_FILE" && ! grep -q "$ALIASES_BLOCK_END" "$RC_FILE"; then
+    generate_aliases >> "$RC_FILE"
   fi
 }
 
