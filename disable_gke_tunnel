@@ -1,0 +1,76 @@
+#!/bin/bash
+
+spinner() {
+  local STEPS=("${@:1:$# / 2}")
+  local CMDS=("${@:$# / 2 + 1}")
+
+  local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+  local FRAME_INTERVAL=0.1
+  local step=0
+
+  tput civis -- invisible
+
+  while [ "$step" -lt "${#CMDS[@]}" ]; do
+    LOG_FILE=/tmp/gke_tunnel_output.log
+    ${CMDS[$step]} > $LOG_FILE 2>&1 &
+    pid=$!
+
+    while ps -p $pid &>/dev/null; do
+      echo -ne "\\r[   ] ${STEPS[$step]} "
+
+      for k in "${!FRAME[@]}"; do
+        echo -ne "\\r[ ${FRAME[k]} ]"
+        sleep $FRAME_INTERVAL
+      done
+    done
+    wait $pid
+    status=$?
+    output=$(cat $LOG_FILE)
+
+    if [ $status -eq 0 ]; then
+        echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
+        rm -f $LOG_FILE
+    else
+        echo -ne "\\r[ ❌ ] ${STEPS[$step]}\\n"
+        echo -e "$output"
+        rm -f $LOG_FILE
+        exit 1
+    fi
+
+    step=$((step + 1))
+  done
+
+  tput cnorm -- normal
+}
+
+remove_zsh_aliases() {
+  local ZSHRC="$HOME/.zshrc"
+  local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
+  local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
+
+  if grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
+    sed -i '' "/$ALIASES_BLOCK_START/,/$ALIASES_BLOCK_END/d" "$ZSHRC"
+  fi
+}
+
+disable_active_connection() {
+  if nc -z 127.0.0.1 8888 > /dev/null 2>&1; then
+    if pgrep -f '\-M \-S /tmp/sslsock' > /dev/null 2>&1; then
+      ssh -S /tmp/sslsock -O exit gke-mgmt > /dev/null 2>&1
+    fi
+  else
+    return 0
+  fi
+}
+
+STEPS=(
+  "Removing GKE-TUNNEL aliases from ~/.zshrc file"
+  "Disabling active GKE-TUNNEL connections"
+)
+
+CMDS=(
+  "remove_zsh_aliases"
+  "disable_active_connection > /dev/null 2>&1"
+)
+
+spinner "${STEPS[@]}" "${CMDS[@]}"
