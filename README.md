@@ -45,11 +45,11 @@ gcloud compute ssh <BASTION_HOST_NAME> \
   -- -L 8888:localhost:8888 -N -q -f
 ```
 
-We can now access the GKE API with kubectl commands using the proxy
+We can now access the GKE API with kubectl commands using the proxy  
 ```
 HTTPS_PROXY=localhost:8888 kubectl get namespaces
 ```
-We should we an output of all namespaces in our private GKE cluster
+We should we an output of all namespaces in our private GKE cluster.  
 
 ## Using Some Automation
 #### Prepare scripts
@@ -60,8 +60,8 @@ chmod +x gke_tunnel disable_gke_tunnel
 ```
 
 #### Using ```gke_tunnel``` script
-```gke_tunnel``` script is designed to connect to a vm-instance named bastion-host in a project same projet as the GKE cluster
-It connects to the target bastion host through the IAP tunnel and addes aliases to kubectl, kubens and helm commands
+```gke_tunnel``` script is designed to connect to a vm-instance named bastion-host in a project same projet as the GKE cluster.  
+It connects to the target bastion host through the IAP tunnel and addes aliases to kubectl, kubens and helm commands.  
 
 ```
 gke_tunnel <BASTION_HOST_PROJECT> <GKE_CLUSTER_NAME>
