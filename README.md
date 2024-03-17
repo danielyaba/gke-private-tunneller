@@ -10,20 +10,11 @@ Ensure those tools are installed on your local machine:
 * gcloud
 
 ## Install TinyProxy VM-Instance
-After you installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion host is just to install TinyProxy and add 'localhost' to be allowed in TinyProxy configuration file
+After you installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion host is just to install TinyProxy and add 'localhost' to be allowed in TinyProxy configuration file (also can be automated through startup-script)
 
 ```
 apt update
 apt install -y tinyproxy
-Allow localhost
-service tinyproxy restart
-```
-
-This can also be automated through an idempotent startup-script:
-```
-#! /bin/bash
-apt-get update
-apt-get install -y tinyproxy
 grep -qxF ‘Allow localhost’ /etc/tinyproxy/tinyproxy.conf || echo ‘Allow localhost’ >> /etc/tinyproxy/tinyproxy.conf
 service tinyproxy restart
 ```
