@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 connect_to_gke_mgmt() {
   
   PROJECT_ID="$1"

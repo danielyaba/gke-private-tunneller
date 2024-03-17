@@ -60,7 +60,7 @@ chmod +x gke_tunnel disable_gke_tunnel
 ```
 
 #### Using gke_tunnel script
-gke_tunnel script is designed to connect to a vm-instance named bastion-host in a project same projet as the GKE cluster.  
+gke_tunnel script is designed to connect to a vm-instance named bastion-host in the same projet as the GKE cluster.  
 It connects to the target bastion host through the IAP tunnel and addes aliases to kubectl, kubens and helm commands.  
 
 ```
