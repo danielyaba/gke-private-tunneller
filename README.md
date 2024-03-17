@@ -20,7 +20,7 @@ service tinyproxy restart
 ```
 
 ## Connect To GKE
-first add your GKE cluster to your local machine
+First add your GKE cluster to your local machine
 ```
 gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
   --zone <GKE_CLUSTER_ZONE> \
@@ -40,7 +40,7 @@ We can now access the GKE API with kubectl commands using the proxy
 ```
 HTTPS_PROXY=localhost:8888 kubectl get namespaces
 ```
-We should we an output of all namespaces in our private GKE cluster.  
+We should see an output of all namespaces in our private GKE cluster.  
 
 ## Using Some Automation
 #### Prepare scripts
