@@ -13,16 +13,6 @@ connect_to_gke_mgmt() {
     -L 8888:localhost:8888 -N -q -f
 }
 
-check_shell() {
-  parent_process=$(ps -p $$ -o comm=)
-  if echo "$parent_process" | grep -q "zsh"; then
-      echo "Zsh"
-  elif echo "$parent_process" | grep -q "bash"; then
-      echo "Bash"
-  else
-      echo "Unknown shell"
-  fi
-}
 
 generate_aliases() {
   cat <<EOF
