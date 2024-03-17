@@ -5,7 +5,7 @@ What do you do when you setup a private GKE cluster and you want to access it fr
 This is when tinyproxy comes to the rescue
 
 ### Pre-Requisuites
-Ensure those tools are installed in your local machine:
+Ensure those tools are installed on your local machine:
 * kubectl
 * gcloud
 
