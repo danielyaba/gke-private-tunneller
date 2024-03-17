@@ -68,5 +68,5 @@ gke_tunnel <BASTION_HOST_PROJECT> <GKE_CLUSTER_NAME>
 ```
 
 #### Using disable_gke_tunnel script
-disable_gke_tunnel script will disconnect from the tunnel and removes all aliases.  
+disable_gke_tunnel script disconnects from the tunnel and removes all aliases.  
 ```disable_gke_tunnel```
