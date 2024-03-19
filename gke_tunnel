@@ -25,6 +25,7 @@ alias kl='HTTPS_PROXY=localhost:8888 kubectl logs -f'
 alias kubectl='HTTPS_PROXY=localhost:8888 kubectl'
 alias helm='HTTPS_PROXY=localhost:8888 helm'
 alias kubens='HTTPS_PROXY=localhost:8888 kubens'
+alias k9s='HTTPS_PROXY=localhost:8888 k9s'
 #### END GKE-TUNNEL ALIASES ####
 EOF
 }
@@ -175,7 +176,7 @@ fi
 STEPS=(
   "Connecting to bastion-host in project $PROJECT_ID"
   "Adding cluster $GKE_CLUSTER to kubeconfig file"
-  "Setting kubectl, Helm & kubens aliases"
+  "Setting kubectl, Helm, kubens & k9s aliases"
 )
 CMDS=(
   "connect_to_gke_mgmt $PROJECT_ID"
