@@ -1,10 +1,11 @@
 #!/bin/bash
+ERROR_LOG_FILE=/tmp/gke_tunnel_errors.log
+STDOUT_LOG_FILE=/tmp/gke_tunnel_output.log
+
 
 connect_to_gke_mgmt() {
-  
   PROJECT_ID="$1"
-
-  gcloud compute ssh bastion-host \
+  gcloud compute ssh gke-mgmt \
     --project="$PROJECT_ID" \
     --zone=me-west1-a \
     --tunnel-through-iap \
@@ -30,20 +31,33 @@ EOF
 
 
 add_zsh_aliases() {
-  parent_process=$(ps -p $$ -o comm=)
-  if echo "$parent_process" | grep -q "zsh"; then
-    local RC_FILE="$HOME/.zshrc"
-  else
-    local RC_FILE="$HOME/.bashrc"
-  fi
+  local ZSHRC="$HOME/.zshrc"
   local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
   local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
 
-  if ! grep -q "$ALIASES_BLOCK_START" "$RC_FILE" && ! grep -q "$ALIASES_BLOCK_END" "$RC_FILE"; then
-    generate_aliases >> "$RC_FILE"
+  if ! grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && ! grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
+    generate_aliases >> "$ZSHRC"
   fi
 }
 
+
+print_line() {
+  local yellow="\033[0;33m"
+  local reset="\033[0m"
+  echo -e "${yellow}$1${reset}"
+}
+
+
+print_options() {
+  clear  # Clear the terminal
+  for ((i=0; i<${#OPTIONS[@]}; i++)); do
+    if [ $i -eq $SELECTED_INDEX ]; then
+      print_line "${OPTIONS[i]}"  # Highlight the selected option
+    else
+      echo "${OPTIONS[i]}"
+    fi
+  done
+}
 
 spinner() {
   local STEPS=("${@:1:$# / 2}")
@@ -56,58 +70,127 @@ spinner() {
   tput civis -- invisible
 
   while [ "$step" -lt "${#CMDS[@]}" ]; do
-    LOG_FILE=/tmp/gke_tunnel_output.log
-    ${CMDS[$step]} > $LOG_FILE 2>&1 &
+    ${CMDS[$step]} 2> $ERROR_LOG_FILE &
     pid=$!
 
     while ps -p $pid &>/dev/null; do
-      echo -ne "\\r[   ] ${STEPS[$step]} "
+      echo -ne "\\r[   ] ${STEPS[$step]}"
 
       for k in "${!FRAME[@]}"; do
         echo -ne "\\r[ ${FRAME[k]} ]"
         sleep $FRAME_INTERVAL
       done
     done
+
     wait $pid
     status=$?
-    output=$(cat $LOG_FILE)
-
+    
     if [ $status -eq 0 ]; then
         echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
     else
-        echo -ne "\\r[ ❌ ] ${STEPS[$step]}\\n"
+        echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
+        output=$(cat $ERROR_LOG_FILE)
         echo -e "$output"
-        rm -f $LOG_FILE
+        rm -f $ERROR_LOG_FILE # $STDOUT_LOG_FILE
         exit 1
     fi
 
     step=$((step + 1))
+    rm -f $ERROR_LOG_FILE # $STDOUT_LOG_FILE
+  
   done
 
   tput cnorm -- normal
 }
 
 
+collect_gke_clusters() {
+  local PROJECT_ID="$1"
+  gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}' > $STDOUT_LOG_FILE
+}
+
+
+select_gke_cluster() {
+  local PROJECT_ID="$1"
+  # OPTIONS=($(gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}'))
+  # echo "Searching for GKE clusters in project $1"
+  # gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}' > STDOUT_LOG_FILE
+  # local num_clusters=${#OPTIONS[@]}
+
+  local STEPS=(
+    "Collecting GKE clsuters from project $PROJECT_ID"
+  )
+  local CMDS=(
+    "collect_gke_clusters $PROJECT_ID"
+  )
+  spinner "${STEPS[@]}" "${CMDS[@]}"
+  IFS=$'\n' read -d '' -r -a OPTIONS < "$STDOUT_LOG_FILE"
+  # echo $OPTIONS
+
+  if [ ${#OPTIONS[@]} -eq 0 ]; then
+    echo -ne "\\r[ X ] No GKE clusters found in project $PROJECT_ID"
+    exit 1
+  elif [ ${#OPTIONS[@]} -eq 1 ]; then
+    echo -ne "\\r[ ✔ ] Selected GKE cluster: ${OPTIONS[0]}\n\033[A"
+    GKE_CLUSTER=${OPTIONS[0]}
+    return 0
+  else
+    local SELECTED_INDEX=0
+
+    # Print initial options
+    print_options
+
+    while true; do
+      # Read user input
+      read -rsn1 key
+
+      case "$key" in
+        A)  # UP arrow key
+          if [ $SELECTED_INDEX -gt 0 ]; then
+            ((SELECTED_INDEX--))
+          fi
+          ;;
+        B)  # DOWN arrow key
+          if [ $SELECTED_INDEX -lt $((${#OPTIONS[@]} - 1)) ]; then
+            ((SELECTED_INDEX++))
+          fi
+          ;;
+        '') # Enter key
+          # clear  # Clear the terminal before displaying the selected option
+          GKE_CLUSTER=${OPTIONS[SELECTED_INDEX]}
+          return 0
+          ;;
+      esac
+
+      # Print options with current selection emphasized
+      print_options
+    done
+  fi
+}
+
+
 PROJECT_ID="$1"
-GKE_CLUSTER="$2"
+# GKE_CLUSTER="$2"
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 [[ -z "$PROJECT_ID" ]] && printf "PROJECT_ID is not set" && exit 1
-[[ -z "$GKE_CLUSTER" ]] && printf "GKE_CLUSTER is not set" && exit 1
-nc -z 127.0.0.1 8888 && echo "Tunnel is already open!" && exit 0
+# [[ -z "$GKE_CLUSTER" ]] && printf "GKE_CLUSTER is not set" && exit 1
+nc -z 127.0.0.1 8888 && echo "Tunnel to basion-host is already open!" && exit 0
 
+select_gke_cluster $PROJECT_ID
 
 STEPS=(
+  # "Searching for GKE cluster in project $PROJECT_ID"
   "Connecting to bastion-host in project $PROJECT_ID"
   "Adding cluster $GKE_CLUSTER to kubeconfig file"
   "Setting kubectl, Helm & kubens aliases"
 )
-
 CMDS=(
+  # "select_gke_cluster $PROJECT_ID"
   "connect_to_gke_mgmt $PROJECT_ID"
   "gcloud container clusters get-credentials $GKE_CLUSTER --region=me-west1 --project=$PROJECT_ID --no-user-output-enabled"
-  "add_aliases"
+  "add_zsh_aliases"
 )
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
-echo "Aliases added. Please run 'source ~/.zshrc' or 'source ~/.bashrc' to apply the changes."
+echo "Aliases added to ~/.zshrc. Please run 'source ~/.zshrc' to apply the changes."
