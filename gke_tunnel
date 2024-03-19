@@ -177,7 +177,11 @@ PROJECT_ID="$1"
 # [[ -z "$GKE_CLUSTER" ]] && printf "GKE_CLUSTER is not set" && exit 1
 nc -z 127.0.0.1 8888 && echo "Tunnel to basion-host is already open!" && exit 0
 
-select_gke_cluster $PROJECT_ID
+if [[ $# -ne 2 ]]; then
+  select_gke_cluster $PROJECT_ID
+else 
+  GKE_CLUSTER=$2
+fi
 
 STEPS=(
   # "Searching for GKE cluster in project $PROJECT_ID"
