@@ -63,8 +63,12 @@ disable_active_connection() {
   fi
 }
 
+PARENT_PROCESS=$(ps -p $$ -o comm=)
+echo $SHELL | grep -q "bash" && RC_FILE="$HOME/.bashrc" || RC_FILE="$HOME/.zshrc"
+RC_FILE=$(echo "$RC_FILE" | sed "s|$HOME|~|g")
+
 STEPS=(
-  "Removing GKE-TUNNEL aliases from ~/.zshrc file"
+  "Removing GKE-TUNNEL aliases from $RC_FILE file"
   "Disabling active GKE-TUNNEL connections"
 )
 
