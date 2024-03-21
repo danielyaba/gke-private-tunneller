@@ -32,12 +32,15 @@ EOF
 
 
 add_zsh_aliases() {
-  local ZSHRC="$HOME/.zshrc"
+  # local RC_FILE="$HOME/.zshrc"
+  PARENT_PROCESS=$(ps -p $$ -o comm=)
+  echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
+  echo $RC_FILE > $STDOUT_LOG_FILE
   local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
   local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
 
-  if ! grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && ! grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
-    generate_aliases >> "$ZSHRC"
+  if ! grep -q "$ALIASES_BLOCK_START" "$RC_FILE" && ! grep -q "$ALIASES_BLOCK_END" "$RC_FILE"; then
+    generate_aliases >> "$RC_FILE"
   fi
 }
 
@@ -160,12 +163,16 @@ select_gke_cluster() {
   fi
 }
 
+echo "==============================================================="
+echo "==================== GKE-Private-Tunneller ===================="
+echo "==============================================================="
+
 
 PROJECT_ID="$1"
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 [[ -z "$PROJECT_ID" ]] && printf "PROJECT_ID is not set" && exit 1
-nc -z 127.0.0.1 8888 && echo "Tunnel to basion-host is already open!" && exit 0
+nc -z 127.0.0.1 8888 2> /dev/null && echo "Tunnel to basion-host is already open!" && exit 0
 
 if [[ $# -ne 2 ]]; then
   select_gke_cluster $PROJECT_ID
@@ -185,4 +192,12 @@ CMDS=(
 )
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
-echo "Aliases added to ~/.zshrc. Please run 'source ~/.zshrc' to apply the changes."
+
+RC_FILE=$(< "$STDOUT_LOG_FILE")
+# Replace $HOME with ~/ without escaping ~
+RC_FILE=$(echo "$RC_FILE" | sed "s|$HOME|~|g")
+# echo "$RC_FILE"
+
+echo "==============================================================="
+echo Done!
+echo "Please run 'source $RC_FILE' to refresh aliases."
