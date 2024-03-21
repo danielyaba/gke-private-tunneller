@@ -32,7 +32,6 @@ EOF
 
 
 add_zsh_aliases() {
-  # local RC_FILE="$HOME/.zshrc"
   PARENT_PROCESS=$(ps -p $$ -o comm=)
   echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
   echo $RC_FILE > $STDOUT_LOG_FILE
