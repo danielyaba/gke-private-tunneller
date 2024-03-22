@@ -6,8 +6,8 @@ This is when tinyproxy comes to the rescue
 
 ### Pre-Requisuites
 Ensure those tools are installed on your local machine:
-* kubectl
-* gcloud
+* [kubectl] (https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+* [gcloud] (https://cloud.google.com/sdk/docs/install)
 
 ## Install TinyProxy VM-Instance
 After you installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion host is just to install TinyProxy and add 'localhost' to be allowed in TinyProxy configuration file (also can be automated through startup-script)
@@ -28,7 +28,7 @@ gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
   --internal-ip
 ``` 
 
-Now let's create a tunnel to the bation host with IAP
+Now let's create a tunnel to the bation host using IAP
 ```
 gcloud compute ssh <BASTION_HOST_NAME> \
   --project <BASTION_HOST_PROJECT> \
@@ -62,4 +62,6 @@ gke_tunnel <BASTION_HOST_PROJECT> <GKE_CLUSTER_NAME>
 
 #### Using disable_gke_tunnel script
 disable_gke_tunnel script disconnects from the tunnel and removes all aliases.  
-```disable_gke_tunnel```
+```
+disable_gke_tunnel
+```
