@@ -28,7 +28,7 @@ gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
   --internal-ip
 ``` 
 
-Now let's create a tunnel to the bation host using IAP
+Now let's create a tunnel to the bastion host using IAP
 ```
 gcloud compute ssh <BASTION_HOST_NAME> \
   --project <BASTION_HOST_PROJECT> \
