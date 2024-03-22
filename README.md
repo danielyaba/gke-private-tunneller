@@ -10,7 +10,7 @@ Ensure those tools are installed on your local machine:
 * [gcloud](https://cloud.google.com/sdk/docs/install)
 
 ## Install TinyProxy VM-Instance
-After you installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion host is just to install TinyProxy and add 'localhost' to be allowed in TinyProxy configuration file (also can be automated through startup-script)
+After installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add to allow 'localhost' in the TinyProxy config file (also can be automated through startup-script)
 
 ```
 apt update
@@ -20,7 +20,7 @@ service tinyproxy restart
 ```
 
 ## Connect To GKE
-First add your GKE cluster to your local machine
+1.  Add your GKE cluster to your local machine
 ```
 gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
   --zone <GKE_CLUSTER_ZONE> \
@@ -28,7 +28,7 @@ gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
   --internal-ip
 ``` 
 
-Now let's create a tunnel to the bastion host using IAP
+2. Create a tunnel to the bastion host using IAP
 ```
 gcloud compute ssh <BASTION_HOST_NAME> \
   --project <BASTION_HOST_PROJECT> \
@@ -36,7 +36,7 @@ gcloud compute ssh <BASTION_HOST_NAME> \
   -- -L 8888:localhost:8888 -N -q -f
 ```
 
-We can now access the GKE API with kubectl commands using the proxy  
+3. Access the GKE API with kubectl commands using the proxy  
 ```
 HTTPS_PROXY=localhost:8888 kubectl get namespaces
 ```
