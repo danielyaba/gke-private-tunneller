@@ -31,7 +31,7 @@ spinner() {
         echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
         rm -f $LOG_FILE
     else
-        echo -ne "\\r[ ❌ ] ${STEPS[$step]}\\n"
+        echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
         echo -e "$output"
         rm -f $LOG_FILE
         exit 1
