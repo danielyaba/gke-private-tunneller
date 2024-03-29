@@ -70,7 +70,7 @@ spinner() {
   local FRAME_INTERVAL=0.1
   local step=0
 
-  tput civis -- invisible
+  tput civis
 
   while [ "$step" -lt "${#CMDS[@]}" ]; do
     ${CMDS[$step]} 2> $ERROR_LOG_FILE &
@@ -103,7 +103,7 @@ spinner() {
   
   done
 
-  tput cnorm -- normal
+  tput cnorm
 }
 
 
