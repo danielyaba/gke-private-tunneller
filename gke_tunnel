@@ -22,6 +22,12 @@ alias k='HTTPS_PROXY=localhost:8888 kubectl'
 alias kg='HTTPS_PROXY=localhost:8888 kubectl get'
 alias kd='HTTPS_PROXY=localhost:8888 kubectl describe'
 alias kl='HTTPS_PROXY=localhost:8888 kubectl logs -f'
+alias ka='HTTPS_PROXY=localhost:8888 kubectl apply -f'
+alias kgn='HTTPS_PROXY=localhost:8888 kubectl get namespaces'
+alias kgp='HTTPS_PROXY=localhost:8888 kubectl get pods'
+alias kgd='HTTPS_PROXY=localhost:8888 kubectl get deployments'
+alias kgs='HTTPS_PROXY=localhost:8888 kubectl get secrets'
+alias kdp='HTTPS_PROXY=localhost:8888 kubectl describe pod'
 alias kubectl='HTTPS_PROXY=localhost:8888 kubectl'
 alias helm='HTTPS_PROXY=localhost:8888 helm'
 alias kubens='HTTPS_PROXY=localhost:8888 kubens'
@@ -32,15 +38,11 @@ EOF
 
 
 add_zsh_aliases() {
-  PARENT_PROCESS=$(ps -p $$ -o comm=)
   echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
   echo $RC_FILE > $STDOUT_LOG_FILE
-  local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
-  local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
-
-  if ! grep -q "$ALIASES_BLOCK_START" "$RC_FILE" && ! grep -q "$ALIASES_BLOCK_END" "$RC_FILE"; then
-    generate_aliases >> "$RC_FILE"
-  fi
+  sed -i '' "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" $RC_FILE
+  sed -i '' "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" $RC_FILE
+  sed -i '' "s/'kubens/'HTTPS_PROXY=localhost:8888 kubens/g" $RC_FILE
 }
 
 
@@ -70,7 +72,7 @@ spinner() {
   local FRAME_INTERVAL=0.1
   local step=0
 
-  tput civis
+  tput civis -- invisible
 
   while [ "$step" -lt "${#CMDS[@]}" ]; do
     ${CMDS[$step]} 2> $ERROR_LOG_FILE &
@@ -95,6 +97,7 @@ spinner() {
         output=$(cat $ERROR_LOG_FILE)
         echo -e "$output"
         rm -f $ERROR_LOG_FILE
+        tput cnorm
         exit 1
     fi
 
@@ -103,7 +106,7 @@ spinner() {
   
   done
 
-  tput cnorm
+  tput cnorm -- normal
 }
 
 
@@ -128,7 +131,8 @@ select_gke_cluster() {
     echo -ne "\\r[ X ] No GKE clusters found in project $PROJECT_ID"
     exit 1
   elif [ ${#OPTIONS[@]} -eq 1 ]; then
-    echo -ne "\\r[ ✔ ] Selected GKE cluster: ${OPTIONS[0]}\n\033[A"
+    echo "[ ✔ ] Selected GKE cluster: ${OPTIONS[0]}"
+    echo -ne "\\r[ ✔ ] Selected GKE cluster: ${OPTIONS[0]}"
     GKE_CLUSTER=${OPTIONS[0]}
     return 0
   else
@@ -163,7 +167,7 @@ select_gke_cluster() {
 }
 
 echo "==============================================================="
-echo "==================== GKE-Private-Tunneller ===================="
+echo "=                   GKE-Private-Tunneller                     ="
 echo "==============================================================="
 
 
@@ -177,6 +181,7 @@ if [[ $# -ne 2 ]]; then
   select_gke_cluster $PROJECT_ID
 else 
   GKE_CLUSTER=$2
+  echo "[ ✔ ] Selected GKE cluster: $GKE_CLUSTER"
 fi
 
 STEPS=(
@@ -193,9 +198,7 @@ CMDS=(
 spinner "${STEPS[@]}" "${CMDS[@]}"
 
 RC_FILE=$(< "$STDOUT_LOG_FILE")
-# Replace $HOME with ~/ without escaping ~
 RC_FILE=$(echo "$RC_FILE" | sed "s|$HOME|~|g")
-# echo "$RC_FILE"
 
 echo "==============================================================="
 echo Done!
