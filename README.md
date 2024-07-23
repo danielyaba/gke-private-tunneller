@@ -5,10 +5,27 @@ What do you do when you setup a private GKE cluster and you want to access it fr
 This is when tinyproxy comes to the rescue
 
 ### Pre-Requisuites
-Ensure those tools are installed on your local machine:
-* [kubectl](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
-* [gcloud](https://cloud.google.com/sdk/docs/install)
-* [gke-gcloud-auth-plugin](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+1. Ensure those tools are installed on your local machine:
+  * [kubectl](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+  * [gcloud](https://cloud.google.com/sdk/docs/install)
+  * [gke-gcloud-auth-plugin](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+
+2. Ensure this alias are configured in your `~/.bashrc` or `~/.zshrc` file:
+```
+kubectl=kubectl
+```
+Also you can add some other aliases of `kubectl` which might be usefull:
+```
+k=kubectl
+ka='kubectl apply -f'
+kd='kubectl describe'
+kdp='kubectl describe pods'
+kg='kubectl get'
+kgp='kubectl get pods'
+kl='kubectl logs'
+```
+
+
 
 ## Install TinyProxy VM-Instance
 After installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add to allow 'localhost' in the TinyProxy config file (also can be automated through startup-script)
