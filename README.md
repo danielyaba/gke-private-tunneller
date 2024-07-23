@@ -12,17 +12,17 @@ This is when tinyproxy comes to the rescue
 
 2. Ensure this alias are configured in your `~/.bashrc` or `~/.zshrc` file:
 ```
-kubectl=kubectl
+alias kubectl=kubectl
 ```
 Also you can add some other aliases of `kubectl` which might be usefull:
 ```
-k=kubectl
-ka='kubectl apply -f'
-kd='kubectl describe'
-kdp='kubectl describe pods'
-kg='kubectl get'
-kgp='kubectl get pods'
-kl='kubectl logs'
+alias k=kubectl
+alias ka='kubectl apply -f'
+alias kd='kubectl describe'
+alias kdp='kubectl describe pods'
+alias kg='kubectl get'
+alias kgp='kubectl get pods'
+alias kl='kubectl logs'
 ```
 
 
