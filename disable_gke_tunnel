@@ -44,13 +44,17 @@ spinner() {
 }
 
 remove_zsh_aliases() {
-  local ZSHRC="$HOME/.zshrc"
-  local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
-  local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
+  # local ZSHRC="$HOME/.zshrc"
+  echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
+  # local ALIASES_BLOCK_START="#### GKE-TUNNEL ALIASES ####"
+  # local ALIASES_BLOCK_END="#### END GKE-TUNNEL ALIASES ####"
 
-  if grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
-    sed -i '' "/$ALIASES_BLOCK_START/,/$ALIASES_BLOCK_END/d" "$ZSHRC"
-  fi
+  # if grep -q "$ALIASES_BLOCK_START" "$ZSHRC" && grep -q "$ALIASES_BLOCK_END" "$ZSHRC"; then
+  #   sed -i '' "/$ALIASES_BLOCK_START/,/$ALIASES_BLOCK_END/d" "$ZSHRC"
+  # fi
+  sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" $RC_FILE
+  sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" $RC_FILE
+  sed -i '' "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" $RC_FILE
 }
 
 disable_active_connection() {
