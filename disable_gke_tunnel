@@ -34,6 +34,7 @@ spinner() {
         echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
         echo -e "$output"
         rm -f $LOG_FILE
+        tput cnorm
         exit 1
     fi
 
