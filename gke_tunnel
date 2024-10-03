@@ -26,34 +26,17 @@ connect_to_gke_mgmt() {
 }
 
 
-generate_aliases() {
-  cat <<EOF
-#### GKE-TUNNEL ALIASES ####
-alias k='HTTPS_PROXY=localhost:8888 kubectl'
-alias kg='HTTPS_PROXY=localhost:8888 kubectl get'
-alias kd='HTTPS_PROXY=localhost:8888 kubectl describe'
-alias kl='HTTPS_PROXY=localhost:8888 kubectl logs -f'
-alias ka='HTTPS_PROXY=localhost:8888 kubectl apply -f'
-alias kgn='HTTPS_PROXY=localhost:8888 kubectl get namespaces'
-alias kgp='HTTPS_PROXY=localhost:8888 kubectl get pods'
-alias kgd='HTTPS_PROXY=localhost:8888 kubectl get deployments'
-alias kgs='HTTPS_PROXY=localhost:8888 kubectl get secrets'
-alias kdp='HTTPS_PROXY=localhost:8888 kubectl describe pod'
-alias kubectl='HTTPS_PROXY=localhost:8888 kubectl'
-alias helm='HTTPS_PROXY=localhost:8888 helm'
-alias kubens='HTTPS_PROXY=localhost:8888 kubens'
-alias k9s='HTTPS_PROXY=localhost:8888 k9s'
-#### END GKE-TUNNEL ALIASES ####
-EOF
-}
-
-
 add_zsh_aliases() {
   echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
   echo $RC_FILE > $STDOUT_LOG_FILE
-  sed -i '' "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" $RC_FILE
-  sed -i '' "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" $RC_FILE
-  sed -i '' "s/'kubens/'HTTPS_PROXY=localhost:8888 kubens/g" $RC_FILE
+  if [[ $OSTYPE == 'darwin'* ]]; then
+    SED_COMMAND="sed -i ''"
+  else
+    SED_COMMAND="sed -i"
+  fi
+  $SED_COMMAND "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" $RC_FILE
+  $SED_COMMAND "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" $RC_FILE
+  $SED_COMMAND "s/'kubens/'HTTPS_PROXY=localhost:8888 kubens/g" $RC_FILE
 }
 
 
