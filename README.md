@@ -16,7 +16,7 @@ alias kubectl=kubectl
 ```
 Also you can add some other aliases of `kubectl` which might be usefull:
 ```
-alias k=kubectl
+alias k='kubectl'
 alias ka='kubectl apply -f'
 alias kd='kubectl describe'
 alias kdp='kubectl describe pods'
@@ -64,8 +64,8 @@ We should see an output of all namespaces in our private GKE cluster.
 #### Prepare scripts
 ```
 git clone https://github.com/danielyaba/gke-private-tunneller.git && cd gke-private-tunneller
-cp gke_tunnel disable_gke_tunnel /usr/local/bin/
-chmod +x gke_tunnel disable_gke_tunnel
+sudo cp gke_tunnel disable_gke_tunnel /usr/local/bin/
+sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 ```
 
 #### Using _gke_tunnel_ script
