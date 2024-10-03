@@ -1,5 +1,5 @@
 # GKE-Private-Tunneller
-The guide shows how to connect to the control plane of a GKE private cluster, leveraging a proxy and an IAP tunnel.  
+The guide shows how to connect to a private GKE cluster, leveraging a proxy and an IAP tunnel.  
 
 What do you do when you setup a private GKE cluster and you want to access it from your own local machine but your don't have a zero-trust infrastructure installed on your GKE cluster ?
 This is when tinyproxy comes to the rescue
@@ -24,7 +24,6 @@ alias kg='kubectl get'
 alias kgp='kubectl get pods'
 alias kl='kubectl logs'
 ```
-
 
 
 ## Install TinyProxy VM-Instance
