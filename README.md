@@ -27,7 +27,7 @@ alias kl='kubectl logs'
 
 
 ## Install TinyProxy VM-Instance
-You can use the Terraform code to deploy the vm-instance:  
+You can use the Terraform code to deploy the vm-instance with installs TinyProxy:  
 ```
 git clone https://github.com/danielyaba/gke-private-tunneller.git && cd gke-private-tunneller
 cd terrafrom
