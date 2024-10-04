@@ -27,7 +27,7 @@ alias kl='kubectl logs'
 
 
 ## Install TinyProxy VM-Instance
-After installing a bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add to allow 'localhost' in the TinyProxy config file (also can be automated through startup-script)
+After installing the bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add to allow 'localhost' in the TinyProxy config file (also can be automated through startup-script)
 
 ```
 apt update
@@ -47,7 +47,7 @@ gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
 
 2. Create a tunnel to the bastion host using IAP
 ```
-gcloud compute ssh <BASTION_HOST_NAME> \
+gcloud compute ssh gke-mgmt \
   --project <BASTION_HOST_PROJECT> \
   --zone <BASTION_HOST_ZONE> \
   -- -L 8888:localhost:8888 -N -q -f
@@ -68,7 +68,7 @@ sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 ```
 
 #### Using _gke_tunnel_ script
-_gke_tunnel_ script is designed to connect to a vm-instance named bastion-host in the same projet as the GKE cluster.  
+_gke_tunnel_ script is designed to connect to a vm-instance named `gke-mgmt` in the same projet as the GKE cluster.  
 If _GKE_CLUSTER_NAME_ was provided to the script as second argument the script will connect directly to this cluster.  
 If _GKE_CLUSTER_NAME_ wasn't provided then the script will let you choose a cluster from the project provided.  
 It connects to the target bastion host through the IAP tunnel and addes aliases to kubectl, kubens and helm commands.  
