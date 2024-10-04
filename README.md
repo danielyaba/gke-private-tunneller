@@ -27,6 +27,14 @@ alias kl='kubectl logs'
 
 
 ## Install TinyProxy VM-Instance
+You can use the Terraform code to deploy the vm-instance:  
+```
+git clone https://github.com/danielyaba/gke-private-tunneller.git && cd gke-private-tunneller
+cd terrafrom
+terraform init
+terraform plan
+terraform apply
+```
 After installing the bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add to allow 'localhost' in the TinyProxy config file (also can be automated through startup-script)
 
 ```
@@ -62,7 +70,6 @@ We should see an output of all namespaces in our private GKE cluster.
 ## Using Some Automation
 #### Prepare scripts
 ```
-git clone https://github.com/danielyaba/gke-private-tunneller.git && cd gke-private-tunneller
 sudo cp gke_tunnel disable_gke_tunnel /usr/local/bin/
 sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 ```
