@@ -85,7 +85,7 @@ gke_tunnel <BASTION_HOST_PROJECT> <GKE_CLUSTER_NAME>
 ```
 
 #### Using _disable_gke_tunnel_ script
-_disable_gke_tunnel_ script shuts tunnel down and edit kubectl, kubens and helm aliases without the `HTTPS_PROXY=localhost:8888`
+_disable_gke_tunnel_ script shuts the tunnel down and edit kubectl, kubens and helm aliases to be without the `HTTPS_PROXY=localhost:8888`
 ```
 disable_gke_tunnel
 ```
