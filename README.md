@@ -27,7 +27,7 @@ alias kl='kubectl logs'
 
 
 ## Install TinyProxy VM-Instance
-You can use the Terraform code in the directory `./terraform` to deploy the vm-instance with installs TinyProxy 
+You can use the Terraform code in the directory `./terraform` to deploy the vm-instance which installs TinyProxy 
 Fill free to adjust the code to your needs and add it to your infrastrcture code
 After installing the bastion host inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add to allow 'localhost' in the TinyProxy config file (also can be automated through startup-script)
 
