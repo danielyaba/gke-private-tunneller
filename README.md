@@ -9,12 +9,12 @@ This is when tinyproxy comes to the rescue
   * [kubectl](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
   * [gcloud](https://cloud.google.com/sdk/docs/install)
   * [gke-gcloud-auth-plugin](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+  * [Helm](https://helm.sh/)
 
 2. Ensure this alias is configured in your `~/.bashrc` or `~/.zshrc` file:
 ```
 alias kubectl='kubectl'
 alias helm='helm'
-alias kubens='kubens'
 ```
 Also you can add some other aliases of `kubectl` which might be usefull:
 ```
@@ -25,6 +25,7 @@ alias kg='kubectl get'
 alias kl='kubectl logs'
 alias kgp='kubectl get pods'
 alias kdp='kubectl describe pods'
+alias kubens='kubens'
 ```
 
 
