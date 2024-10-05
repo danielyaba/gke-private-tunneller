@@ -80,3 +80,5 @@ CMDS=(
 )
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
+RC_FILE="$HOME/.$(basename "$SHELL")"rc
+grep -q 'zsh' $SHELL && zsh -c "source $RC_FILE" || source $RC_FILE
