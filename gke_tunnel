@@ -27,7 +27,6 @@ connect_to_gke_mgmt() {
 
 
 add_zsh_aliases() {
-  RC_FILE="$HOME/.$(basename "$SHELL")"rc
   if ! grep -q "alias kubectl" $RC_FILE; then
     echo "alias kubectl was not found in $RC_FILE" > $ERROR_LOG_FILE
     return 1
@@ -167,6 +166,7 @@ echo "==============================================================="
 
 
 PROJECT_ID="$1"
+RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 [[ -z "$PROJECT_ID" ]] && print_usage
