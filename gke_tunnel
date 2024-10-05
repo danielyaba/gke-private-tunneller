@@ -28,6 +28,18 @@ connect_to_gke_mgmt() {
 
 add_zsh_aliases() {
   echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
+  if ! grep -q "alias kubectl" $RC_FILE; then
+    echo "alias kubectl was not found in $RC_FILE" >> $ERROR_LOG_FILE
+    return 1
+  fi
+  if ! grep -q "alias helm" $RC_FILE; then
+    echo "alias helm was not found in $RC_FILE" >> $ERROR_LOG_FILE
+    return 1
+  fi
+  # if grep -q "alias kubens" $RC_FILE; then
+  #   echo "alias helm was not found in $RC_FILE" >> $ERROR_LOG_FILE
+  #   tput cnorm
+  # fi
   echo $RC_FILE > $STDOUT_LOG_FILE
   if [[ $OSTYPE == 'darwin'* ]]; then
     SED_COMMAND="sed -i ''"
