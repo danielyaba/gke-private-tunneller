@@ -45,7 +45,6 @@ spinner() {
 }
 
 remove_zsh_aliases() {
-  echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
   if [[ $OSTYPE == 'darwin'* ]]; then
     local SED_COMMAND="sed -i ''"
   else
@@ -54,6 +53,8 @@ remove_zsh_aliases() {
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" $RC_FILE
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" $RC_FILE
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" $RC_FILE
+
+  grep -q 'zsh' $SHELL && zsh -c "source $RC_FILE" || source $RC_FILE
 }
 
 disable_active_connection() {
@@ -66,11 +67,10 @@ disable_active_connection() {
   fi
 }
 
-echo $SHELL | grep -q "bash" && RC_FILE="$HOME/.bashrc" || RC_FILE="$HOME/.zshrc"
-RC_FILE=$(echo "$RC_FILE" | sed "s|$HOME|~|g")
+RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 STEPS=(
-  "Removing GKE-TUNNEL aliases from $RC_FILE file"
+  "Removing GKE-TUNNEL aliases from $(echo "$RC_FILE" | sed "s|"$HOME"|~|g") file"
   "Disabling active GKE-TUNNEL connections"
 )
 
@@ -80,5 +80,4 @@ CMDS=(
 )
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
-RC_FILE="$HOME/.$(basename "$SHELL")"rc
-grep -q 'zsh' $SHELL && zsh -c "source $RC_FILE" || source $RC_FILE
+# grep -q 'zsh' $SHELL && zsh -c "source $RC_FILE" || source $RC_FILE
