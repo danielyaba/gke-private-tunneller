@@ -94,13 +94,13 @@ spinner() {
     done
 
     wait $pid
-    status=$?
+    local status=$?
     
     if [ $status -eq 0 ]; then
         echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
     else
         echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
-        output=$(cat $ERROR_LOG_FILE)
+        local output=$(cat $ERROR_LOG_FILE)
         echo -e "$output"
         rm -f $ERROR_LOG_FILE
         tput cnorm
