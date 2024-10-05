@@ -1,11 +1,12 @@
-variable "vpc_id" {
-  type = string
-  description = "The VPC Id."
+variable "labels" {
+  type = map
+  description = "The labels."
+  default = {}
 }
 
-variable "subnet_id" {
+variable "project_id" {
   type = string
-  description = "The subnet Id."
+  description = "The project Id."
 }
 
 variable "region" {
@@ -13,13 +14,23 @@ variable "region" {
   description = "The region."
 }
 
-variable "labels" {
-  type = map
-  description = "The labels."
-  default = {}
+variable "service_account" {
+  type = string
+  description = "The service account who has access to GKE."
 }
+
+variable "subnet_id" {
+  type = string
+  description = "The subnet Id."
+}
+
 variable "tags" {
   type = list
   description = "The tags."
   default = []
+}
+
+variable "vpc_id" {
+  type = string
+  description = "The VPC Id."
 }
