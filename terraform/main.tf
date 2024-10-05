@@ -18,7 +18,7 @@ module "gke-mgmt" {
   ]
   metadata = {
     startup-script = <<-EOF
-      #! /bin/bash
+      #!/bin/bash
       apt-get update
       apt-get install -y tinyproxy
       grep -qxF 'Allow localhost' /etc/tinyproxy/tinyproxy.conf || echo 'Allow localhost' >> /etc/tinyproxy/tinyproxy.conf

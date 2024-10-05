@@ -39,8 +39,8 @@ spinner() {
     fi
 
     step=$((step + 1))
+    
   done
-
   tput cnorm
 }
 
@@ -66,7 +66,6 @@ disable_active_connection() {
   fi
 }
 
-PARENT_PROCESS=$(ps -p $$ -o comm=)
 echo $SHELL | grep -q "bash" && RC_FILE="$HOME/.bashrc" || RC_FILE="$HOME/.zshrc"
 RC_FILE=$(echo "$RC_FILE" | sed "s|$HOME|~|g")
 
