@@ -16,7 +16,7 @@ This is when tinyproxy comes to the rescue
 alias kubectl='kubectl'
 alias helm='helm'
 ```
-Also you can add some other aliases of `kubectl` which might be usefull:
+Also you can add some other aliases of `kubectl` which might be useful:
 ```
 alias k='kubectl'
 alias ka='kubectl apply -f'
