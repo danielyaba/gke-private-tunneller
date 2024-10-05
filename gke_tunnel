@@ -29,11 +29,11 @@ connect_to_gke_mgmt() {
 add_zsh_aliases() {
   echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
   if ! grep -q "alias kubectl" $RC_FILE; then
-    echo "alias kubectl was not found in $RC_FILE" >> $ERROR_LOG_FILE
+    echo "alias kubectl was not found in $RC_FILE" > $ERROR_LOG_FILE
     return 1
   fi
   if ! grep -q "alias helm" $RC_FILE; then
-    echo "alias helm was not found in $RC_FILE" >> $ERROR_LOG_FILE
+    echo "alias helm was not found in $RC_FILE" > $ERROR_LOG_FILE
     return 1
   fi
   # if grep -q "alias kubens" $RC_FILE; then
@@ -116,13 +116,11 @@ spinner() {
 
 
 collect_gke_clusters() {
-  local PROJECT_ID="$1"
   gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}' > $STDOUT_LOG_FILE
 }
 
 
 select_gke_cluster() {
-  local PROJECT_ID="$1"
   local STEPS=(
     "Collecting GKE clsuters from project $PROJECT_ID"
   )
