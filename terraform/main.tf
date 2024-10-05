@@ -12,6 +12,10 @@ module "gke-mgmt" {
     network    = var.vpc_id
     subnetwork = var.subnet_id
   }]
+  options = {
+    spot               = true
+    termination_action = "STOP"
+  }
   service_account_scopes = [
     "https://www.googleapis.com/auth/cloud-platform",
     "https://www.googleapis.com/auth/userinfo.email",
