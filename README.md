@@ -11,7 +11,7 @@ This is when tinyproxy comes to the rescue
   * [gke-gcloud-auth-plugin](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
   * [helm](https://helm.sh/)
 
-2. Ensure this alias is configured in your `~/.bashrc` or `~/.zshrc` file:
+2. Ensure those aliases are configured in your `~/.bashrc` or `~/.zshrc` file:
 ```
 alias kubectl='kubectl'
 alias helm='helm'
