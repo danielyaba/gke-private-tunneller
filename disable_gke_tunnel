@@ -53,8 +53,6 @@ remove_zsh_aliases() {
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" $RC_FILE
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" $RC_FILE
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" $RC_FILE
-
-  grep -q 'zsh' $SHELL && zsh -c "source $RC_FILE" || source $RC_FILE
 }
 
 disable_active_connection() {
@@ -80,4 +78,6 @@ CMDS=(
 )
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
-# grep -q 'zsh' $SHELL && zsh -c "source $RC_FILE" || source $RC_FILE
+echo "==============================================================="
+echo Done!
+echo "Please run 'source $(echo "$RC_FILE" | sed "s|"$HOME"|~|g")' to refresh aliases."

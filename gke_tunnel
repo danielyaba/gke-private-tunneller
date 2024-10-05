@@ -27,7 +27,7 @@ connect_to_gke_mgmt() {
 
 
 add_zsh_aliases() {
-  echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
+  RC_FILE="$HOME/.$(basename "$SHELL")"rc
   if ! grep -q "alias kubectl" $RC_FILE; then
     echo "alias kubectl was not found in $RC_FILE" > $ERROR_LOG_FILE
     return 1
@@ -36,10 +36,6 @@ add_zsh_aliases() {
     echo "alias helm was not found in $RC_FILE" > $ERROR_LOG_FILE
     return 1
   fi
-  # if grep -q "alias kubens" $RC_FILE; then
-  #   echo "alias helm was not found in $RC_FILE" >> $ERROR_LOG_FILE
-  #   tput cnorm
-  # fi
   echo $RC_FILE > $STDOUT_LOG_FILE
   if [[ $OSTYPE == 'darwin'* ]]; then
     local SED_COMMAND="sed -i ''"
@@ -196,9 +192,6 @@ CMDS=(
 
 spinner "${STEPS[@]}" "${CMDS[@]}"
 
-RC_FILE=$(< "$STDOUT_LOG_FILE")
-RC_FILE=$(echo "$RC_FILE" | sed "s|$HOME|~|g")
-
 echo "==============================================================="
 echo Done!
-echo "Please run 'source $RC_FILE' to refresh aliases."
+echo "Please run 'source $(echo "$RC_FILE" | sed "s|"$HOME"|~|g")' to refresh aliases."
