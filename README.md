@@ -76,10 +76,9 @@ sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 
 #### Using _gke_tunnel_ script
 _gke_tunnel_ script is designed to connect to a vm-instance named `gke-mgmt` in the same project as the GKE private cluster.  
+It connects to 'gke-mgmt' through the IAP tunnel and edit all kubectl, kubens and helm aliases.  
 If _GKE_CLUSTER_NAME_ was provided to the script as second argument the script will connect directly to this cluster.  
-If _GKE_CLUSTER_NAME_ wasn't provided then the script will let you choose a cluster from the project provided.  
-It connects to the target bastion host through the IAP tunnel and edit all kubectl, kubens and helm aliases.  
-
+If _GKE_CLUSTER_NAME_ wasn't provided, then the script will let you choose a cluster from the project provided.  
 ```
 gke_tunnel <BASTION_HOST_PROJECT> <GKE_CLUSTER_NAME>
 ```
