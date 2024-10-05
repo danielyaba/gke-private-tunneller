@@ -42,9 +42,9 @@ add_zsh_aliases() {
   # fi
   echo $RC_FILE > $STDOUT_LOG_FILE
   if [[ $OSTYPE == 'darwin'* ]]; then
-    SED_COMMAND="sed -i ''"
+    local SED_COMMAND="sed -i ''"
   else
-    SED_COMMAND="sed -i"
+    local SED_COMMAND="sed -i"
   fi
   $SED_COMMAND "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" $RC_FILE
   $SED_COMMAND "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" $RC_FILE

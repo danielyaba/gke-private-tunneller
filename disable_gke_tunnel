@@ -39,7 +39,7 @@ spinner() {
     fi
 
     step=$((step + 1))
-    
+
   done
   tput cnorm
 }
@@ -47,9 +47,9 @@ spinner() {
 remove_zsh_aliases() {
   echo $SHELL | grep -q "bash" && local RC_FILE="$HOME/.bashrc" || local RC_FILE="$HOME/.zshrc"
   if [[ $OSTYPE == 'darwin'* ]]; then
-    SED_COMMAND="sed -i ''"
+    local SED_COMMAND="sed -i ''"
   else
-    SED_COMMAND="sed -i"
+    local SED_COMMAND="sed -i"
   fi
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" $RC_FILE
   $SED_COMMAND "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" $RC_FILE
