@@ -27,7 +27,7 @@ variable "subnet_id" {
 variable "tags" {
   type = list
   description = "The tags."
-  default = []
+  default = ["allow-iap-tunnel"]
 }
 
 variable "vpc_id" {
