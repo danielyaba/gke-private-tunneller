@@ -1,5 +1,5 @@
 # GKE-Private-Tunneller
-The guide shows how to connect to a private GKE cluster, leveraging a proxy and an IAP tunnel on Gooelc cloud.  
+The guide shows how to connect to a private GKE cluster, leveraging a proxy and an IAP tunnel on Google cloud.  
 
 What do you do when you've deployed a private GKE cluster and you want to access it from your own local machine but you don't have a zero-trust infrastructure installed on your GKE cluster ?  
 This is when tinyproxy comes to the rescue
