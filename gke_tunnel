@@ -41,9 +41,8 @@ add_zsh_aliases() {
   else
     local SED_COMMAND="sed -i"
   fi
-  $SED_COMMAND "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" $RC_FILE
-  $SED_COMMAND "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" $RC_FILE
-  $SED_COMMAND "s/'kubens/'HTTPS_PROXY=localhost:8888 kubens/g" $RC_FILE
+  $SED_COMMAND "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" ~/.config/zsh/aliases/kubectl_aliases.zsh  
+  $SED_COMMAND "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" ~/.config/zsh/aliases/helm_aliases.zsh
 }
 
 
