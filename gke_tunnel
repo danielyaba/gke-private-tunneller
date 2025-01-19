@@ -170,7 +170,7 @@ RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 [[ -z "$PROJECT_ID" ]] && print_usage
-[[ -z $(gcloud auth list --format="value(account)") ]] && gcloud auth login
+gcloud auth print-access-token 2>/dev/null || gcloud auth login
 nc -z 127.0.0.1 8888 2> /dev/null && echo "Tunnel to basion-host is already open!" && exit 0
 
 if [[ $# -ne 2 ]]; then
