@@ -15,6 +15,7 @@ print_usage() {
 
 
 connect_to_gke_mgmt() {
+  gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login  
   PROJECT_ID="$1"
   gcloud compute ssh gke-mgmt \
     --project="$PROJECT_ID" \
@@ -27,12 +28,14 @@ connect_to_gke_mgmt() {
 
 
 add_zsh_aliases() {
-  if ! grep -q "alias kubectl" $RC_FILE; then
-    echo "alias kubectl was not found in $RC_FILE" > $ERROR_LOG_FILE
+  KUBECTL_ALISES_FILE="$HOME/.config/zsh/aliases/kubectl_aliases.zsh"
+  if ! grep -q "alias kubectl" $KUBECTL_ALISES_FILE; then
+    echo "alias kubectl was not found in $KUBECTL_ALISES_FILE" > $ERROR_LOG_FILE
     return 1
   fi
-  if ! grep -q "alias helm" $RC_FILE; then
-    echo "alias helm was not found in $RC_FILE" > $ERROR_LOG_FILE
+  HELM_ALIASES_FILE="$HOME/.config/zsh/aliases/helm_aliases.zsh"
+  if ! grep -q "alias helm" $HELM_ALIASES_FILE; then
+    echo "alias helm was not found in $HELM_ALIASES_FILE" > $ERROR_LOG_FILE
     return 1
   fi
   echo $RC_FILE > $STDOUT_LOG_FILE
@@ -110,6 +113,7 @@ spinner() {
 
 
 collect_gke_clusters() {
+  gcloud auth print-access-token 2>/dev/null || gcloud auth login
   gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}' > $STDOUT_LOG_FILE
 }
 
@@ -169,7 +173,6 @@ RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 [[ -z "$PROJECT_ID" ]] && print_usage
-gcloud auth print-access-token 2>/dev/null || gcloud auth login
 nc -z 127.0.0.1 8888 2> /dev/null && echo "Tunnel to basion-host is already open!" && exit 0
 
 if [[ $# -ne 2 ]]; then
