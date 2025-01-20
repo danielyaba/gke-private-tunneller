@@ -70,29 +70,22 @@ print_options() {
 spinner() {
   local STEPS=("${@:1:$# / 2}")
   local CMDS=("${@:$# / 2 + 1}")
-
   local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
   local FRAME_INTERVAL=0.1
   local step=0
-
   tput civis
-
   while [ "$step" -lt "${#CMDS[@]}" ]; do
     ${CMDS[$step]} 2> $ERROR_LOG_FILE &
     pid=$!
-
     while ps -p $pid &>/dev/null; do
       echo -ne "\\r[   ] ${STEPS[$step]}"
-
       for k in "${!FRAME[@]}"; do
         echo -ne "\\r[ ${FRAME[k]} ]"
         sleep $FRAME_INTERVAL
       done
     done
-
     wait $pid
     local status=$?
-    
     if [ $status -eq 0 ]; then
         echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
     else
@@ -103,10 +96,8 @@ spinner() {
         tput cnorm
         exit 1
     fi
-
     step=$((step + 1))
     rm -f $ERROR_LOG_FILE
-  
   done
   tput cnorm
 }
@@ -127,7 +118,6 @@ select_gke_cluster() {
   )
   spinner "${STEPS[@]}" "${CMDS[@]}"
   IFS=$'\n' read -d '' -r -a OPTIONS < "$STDOUT_LOG_FILE"
-
   if [ ${#OPTIONS[@]} -eq 0 ]; then
     echo -ne "\\r[ X ] No GKE clusters found in project $PROJECT_ID"
     exit 1
@@ -171,9 +161,11 @@ echo "==============================================================="
 PROJECT_ID="$1"
 RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
+
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 [[ -z "$PROJECT_ID" ]] && print_usage
 nc -z 127.0.0.1 8888 2> /dev/null && echo "Tunnel to basion-host is already open!" && exit 0
+
 
 if [[ $# -ne 2 ]]; then
   select_gke_cluster $PROJECT_ID
@@ -181,6 +173,7 @@ else
   GKE_CLUSTER=$2
   echo "[ ✔ ] Selected GKE cluster: $GKE_CLUSTER"
 fi
+
 
 STEPS=(
   "Connecting to bastion-host in project $PROJECT_ID"
@@ -193,7 +186,9 @@ CMDS=(
   "add_zsh_aliases"
 )
 
+
 spinner "${STEPS[@]}" "${CMDS[@]}"
+
 
 echo "==============================================================="
 echo Done!
