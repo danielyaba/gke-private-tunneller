@@ -3,13 +3,10 @@
 spinner() {
   local STEPS=("${@:1:$# / 2}")
   local CMDS=("${@:$# / 2 + 1}")
-
   local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
   local FRAME_INTERVAL=0.1
   local step=0
-
   tput civis
-
   while [ "$step" -lt "${#CMDS[@]}" ]; do
     LOG_FILE=/tmp/gke_tunnel_output.log
     ${CMDS[$step]} > $LOG_FILE 2>&1 &
@@ -17,7 +14,6 @@ spinner() {
 
     while ps -p $pid &>/dev/null; do
       echo -ne "\\r[   ] ${STEPS[$step]} "
-
       for k in "${!FRAME[@]}"; do
         echo -ne "\\r[ ${FRAME[k]} ]"
         sleep $FRAME_INTERVAL
@@ -26,7 +22,6 @@ spinner() {
     wait $pid
     status=$?
     output=$(cat $LOG_FILE)
-
     if [ $status -eq 0 ]; then
         echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
         rm -f $LOG_FILE
@@ -37,9 +32,7 @@ spinner() {
         tput cnorm
         exit 1
     fi
-
     step=$((step + 1))
-
   done
   tput cnorm
 }
@@ -74,7 +67,6 @@ STEPS=(
   "Removing GKE-TUNNEL aliases from $(echo "$RC_FILE" | sed "s|"$HOME"|~|g") file"
   "Disabling active GKE-TUNNEL connections"
 )
-
 CMDS=(
   "remove_zsh_aliases"
   "disable_active_connection > /dev/null 2>&1"
