@@ -64,6 +64,10 @@ disable_active_connection() {
   fi
 }
 
+echo "==============================================================="
+echo "=                   GKE-Private-Tunneller                     ="
+echo "==============================================================="
+
 RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 STEPS=(
