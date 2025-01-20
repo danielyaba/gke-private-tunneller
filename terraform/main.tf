@@ -1,6 +1,6 @@
 # BASION-HOST VM-INSTANCE
 module "gke-mgmt" {
-  source          = "https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/modules/compute-vm"
+  source          = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/compute-vm?ref=v36.1.0"
   project_id      = var.project_id
   zone            = "${var.region}-a"
   name            = "gke-mgmt"
@@ -33,15 +33,16 @@ module "gke-mgmt" {
 
 
 module "fw-rule" {
-  source = "https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/modules/net-vpc-firewall"
+  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc-firewall?ref=v36.1.0"
   project_id = var.project_id
-  network = var.vpc_id
+  network    = var.vpc_id
   ingress_rules = [{
-      description = "Allow SSH for IAP tunnel"
-      targets = ["allow-iap-tunnel"]
-      source_ranges = ["35.35.240.0/20"]
-      rules = [{ protocol = "tcp", ports = ["22"] }]
-      destination_ranges = [module.gke-mgmt.internal_ip]
+    description        = "Allow SSH for IAP tunnel"
+    targets            = ["allow-iap-tunnel"]
+    source_ranges      = ["35.35.240.0/20"]
+    rules              = [{ protocol = "tcp", ports = ["22"] }]
+    destination_ranges = [module.gke-mgmt.internal_ip]
     }
   ]
 }
+
