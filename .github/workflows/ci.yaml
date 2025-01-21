@@ -5,10 +5,13 @@ on:
       - main
     types:
       - closed
+  push:
+    branches:
+      - main
 
 jobs:
   semantic-release:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
       contents: write
