@@ -73,6 +73,8 @@ We should see an output of all namespaces in our private GKE cluster.
 sudo cp gke_tunnel disable_gke_tunnel /usr/local/bin/
 sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 ```
+This version of script pointing to aliases files in `~/.config/zsh/aliases/kubectl_aliases.zsh`.  
+You should edit `gke_tunnel` script under `add_zsh_aliases` function and change the path to the file that contains your kubectl aliases under `KUBECTL_ALISES_FILE`.  
 
 #### Using _gke_tunnel_ script
 _gke_tunnel_ script is designed to connect to a vm-instance named `gke-mgmt` in the same project as the GKE private cluster.  
@@ -88,3 +90,17 @@ _disable_gke_tunnel_ script shuts the tunnel down and edit kubectl, kubens and h
 ```
 disable_gke_tunnel
 ```
+
+#### Configuration File
+In case you're using symlinks and your aliases are not specified in `~/.zshrc` or `~/.bashrc` you can use configuration file.   
+By default this script supports configuration file in `~/.config/private-gke-tunneller/config.toml` configured as follows:
+```
+[kubectl]
+aliases_file = "~/.config/zsh/aliases/kubectl_aliases.zsh"
+
+[helm]
+aliases_file = "~/.config/zsh/aliases/helm_aliases.zsh"
+```
+
+This way the script will use those file paths to replace the aliases.   
+If configuration file doesn't exists if will fallback to your default  `~/.zshrc` or `~/.bashrc`.  
