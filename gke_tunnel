@@ -1,6 +1,36 @@
 #!/bin/bash
 ERROR_LOG_FILE=/tmp/gke_tunnel_errors.log
 STDOUT_LOG_FILE=/tmp/gke_tunnel_output.log
+DEBUG_FILE=/tmp/gke_tunnel_debug.log
+CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
+
+
+parse_toml() {
+  if [[ ! -x "$(command -v tomlq)" ]]; then
+    KUBECTL_ALIASES_FILE=$(awk -F' = ' -v section="[kubectl]" -v key="aliases_file" '
+      $0 == section {found_section=1}
+      found_section && $1 == key {
+          gsub(/"/, "", $2); gsub(/^[ \t]+|[ \t]+$/, "", $2)  # Remove quotes and trim whitespace
+          print $2
+          exit
+      }
+    ' "$CONFIG_FILE")
+    HELM_ALIASES_FILE=$(awk -F' = ' -v section="[helm]" -v key="aliases_file" '
+      $0 == section {found_section=1}
+      found_section && $1 == key {
+          gsub(/"/, "", $2); gsub(/^[ \t]+|[ \t]+$/, "", $2)  # Remove quotes and trim whitespace
+          print $2
+          exit
+      }
+    ' "$CONFIG_FILE")
+    KUBECTL_ALIASES_FILE=$(eval echo $KUBECTL_ALIASES_FILE)
+    HELM_ALIASES_FILE=$(eval echo $HELM_ALIASES_FILE)
+  else
+    KUBECTL_ALIASES_FILE=$(tomlq '.kubectl.aliases_file' "$CONFIG_FILE")
+    HELM_ALIASES_FILE=$(tomlq '.helm.aliases_file' "$CONFIG_FILE")
+  fi
+  echo $KUBECTL_ALIASES_FILE $HELM_ALIASES_FILE
+}
 
 print_usage() {
   echo "Usage: $(basename $0) <PROJECT_ID>"
@@ -28,24 +58,41 @@ connect_to_gke_mgmt() {
 
 
 add_zsh_aliases() {
-  KUBECTL_ALISES_FILE="$HOME/.config/zsh/aliases/kubectl_aliases.zsh"
-  if ! grep -q "alias kubectl" $KUBECTL_ALISES_FILE; then
-    echo "alias kubectl was not found in $KUBECTL_ALISES_FILE" > $ERROR_LOG_FILE
+  if [[ ! -f $CONFIG_FILE ]]; then
+    KUBECTL_ALIASES_FILE=$RC_FILE
+    HELM_ALIASES_FILE=$RC_FILE
+  else
+    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<< $(parse_toml) 
+    if [[ -z "$KUBECTL_ALIASES_FILE" ]]; then
+      KUBECTL_ALIASES_FILE=$RC_FILE
+    fi
+    if [[ -z "$HELM_ALIASES_FILE" ]]; then
+      HELM_ALIASES_FILE=$RC_FILE
+    fi
+  fi
+  echo $KUBECTL_ALIASES_FILE $HELM_ALIASES_FILE >> $DEBUG_FILE
+  if ! grep -q "alias kubectl" "$KUBECTL_ALIASES_FILE"; then
+    echo "alias kubectl was not found in $KUBECTL_ALIASES_FILE" > $ERROR_LOG_FILE
     return 1
   fi
-  HELM_ALIASES_FILE="$HOME/.config/zsh/aliases/helm_aliases.zsh"
-  if ! grep -q "alias helm" $HELM_ALIASES_FILE; then
+  if ! grep -q "alias helm" "$HELM_ALIASES_FILE"; then
     echo "alias helm was not found in $HELM_ALIASES_FILE" > $ERROR_LOG_FILE
     return 1
   fi
   echo $RC_FILE > $STDOUT_LOG_FILE
   if [[ $OSTYPE == 'darwin'* ]]; then
-    local SED_COMMAND="sed -i ''"
+    sed -i '' "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'k9s/'HTTPS_PROXY=localhost:8888 k9s/g" "$KUBECTL_ALIASES_FILE" 
+    sed -i '' "s/'kubens/'HTTPS_PROXY=localhost:8888 kubens/g" "$KUBECTL_ALIASES_FILE" 
+    sed -i '' "s/'kubectx/'HTTPS_PROXY=localhost:8888 kubectx/g" "$KUBECTL_ALIASES_FILE"  
+    sed -i '' "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" "$HELM_ALIASES_FILE"
   else
-    local SED_COMMAND="sed -i"
+    sed -i "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'k9s/'HTTPS_PROXY=localhost:8888 k9s/g" "$KUBECTL_ALIASES_FILE" 
+    sed -i "s/'kubens/'HTTPS_PROXY=localhost:8888 kubens/g" "$KUBECTL_ALIASES_FILE" 
+    sed -i "s/'kubectx/'HTTPS_PROXY=localhost:8888 kubectx/g" "$KUBECTL_ALIASES_FILE"  
+    sed -i "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" "$HELM_ALIASES_FILE"
   fi
-  $SED_COMMAND "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" ~/.config/zsh/aliases/kubectl_aliases.zsh  
-  $SED_COMMAND "s/'helm/'HTTPS_PROXY=localhost:8888 helm/g" ~/.config/zsh/aliases/helm_aliases.zsh
 }
 
 
