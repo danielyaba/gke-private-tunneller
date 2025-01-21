@@ -1,8 +1,12 @@
 #!/bin/bash
+
 ERROR_LOG_FILE=/tmp/gke_tunnel_errors.log
 STDOUT_LOG_FILE=/tmp/gke_tunnel_output.log
-DEBUG_FILE=/tmp/gke_tunnel_debug.log
-CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
+if [[ -n $PRIVATE_GKE_TUNNELLER_CONFIG ]]; then
+  CONFIG_FILE=$PRIVATE_GKE_TUNNELLER_CONFIG
+else
+  CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
+fi
 
 
 parse_toml() {
@@ -31,6 +35,7 @@ parse_toml() {
   fi
   echo $KUBECTL_ALIASES_FILE $HELM_ALIASES_FILE
 }
+
 
 print_usage() {
   echo "Usage: $(basename $0) <PROJECT_ID>"
