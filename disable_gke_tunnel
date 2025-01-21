@@ -1,7 +1,10 @@
 #!/bin/bash
 
-CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
-DEBUG_FILE=/tmp/gke_tunnel_debug.log
+if [[ -n $PRIVATE_GKE_TUNNELLER_CONFIG ]]; then
+  CONFIG_FILE=$PRIVATE_GKE_TUNNELLER_CONFIG
+else
+  CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
+fi
 
 parse_toml() {
   if [[ ! -x "$(command -v tomlq)" ]]; then
