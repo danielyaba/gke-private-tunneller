@@ -103,4 +103,10 @@ aliases_file = "~/.config/zsh/aliases/helm_aliases.zsh"
 ```
 
 This way the script will use those file paths to replace the aliases.   
-If configuration file doesn't exists if will fallback to your default  `~/.zshrc` or `~/.bashrc`.  
+If configuration file doesn't exists if will fallback to your default  `~/.zshrc` or `~/.bashrc`.   
+
+If you would preffer to use a custom path for configuration file you can add this line to your `~/.zshrc` or `~/.bashrc`:   
+```bash
+export PRIVATE_GKE_TUNNELLER_CONFIG="<path/to/config-file.toml>"
+```
+
