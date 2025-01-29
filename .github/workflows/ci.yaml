@@ -15,6 +15,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Check changed files
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^(gke_tunnel|disable_gke_tunnel)'; then
+            echo "File changes detected, running formatting and linting."
+          else
+            echo "No relevant file changes, skipping formatting and linting."
+          fi
       - name: Install shfmt
         run: sudo apt-get install -y shfmt
       - name: install shellcheck
