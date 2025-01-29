@@ -126,4 +126,4 @@ CMDS=(
 spinner "${STEPS[@]}" "${CMDS[@]}"
 echo "==============================================================="
 echo Done!
-echo "Please run 'source $(echo "$RC_FILE" | sed "s|"$HOME"|~|g")' to refresh aliases."
+echo "Please run 'source ${RC_FILE//$HOME/~}' to refresh aliases."
