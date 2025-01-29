@@ -20,9 +20,9 @@ jobs:
       - name: install shellcheck
         run: sudo apt-get install -y shellcheck
       - name: formatting
-        run: shfmt -i 2 -d **/*.sh
+        run: shfmt -i 2 -d gke_tunnel disable_gke_tunnel
       - name: linting
-        run: shellcheck **/*.sh
+        run: shellcheck gke_tunnel disable_gke_tunnel
     
   semantic-release:
     runs-on: ubuntu-latest
