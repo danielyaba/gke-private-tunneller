@@ -96,10 +96,10 @@ In case you're using symlinks and your aliases are not specified in `~/.zshrc` o
 By default this script supports configuration file in `~/.config/private-gke-tunneller/config.toml` configured as follows:
 ```
 [kubectl]
-aliases_file = "~/.config/zsh/aliases/kubectl_aliases.zsh"
+aliases_file = "path/to/aliases-file"
 
 [helm]
-aliases_file = "~/.config/zsh/aliases/helm_aliases.zsh"
+aliases_file = "path/to/aliases-file"
 ```
 
 This way the script will use those file paths to replace the aliases.   
