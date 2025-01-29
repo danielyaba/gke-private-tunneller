@@ -34,7 +34,7 @@ jobs:
     
   semantic-release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' # && github.ref == 'refs/heads/main'
     needs: formatting-and-linting
     permissions:
       contents: write
