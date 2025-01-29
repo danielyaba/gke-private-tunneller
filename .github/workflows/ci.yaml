@@ -1,17 +1,12 @@
 name: ci
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
   push:
     branches:
       - main
 
 jobs:
   semantic-release:
-    if: github.event_name == 'push' || (github.event.pull_request.merged == true)
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -27,5 +22,6 @@ jobs:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          config-file: ./release.config.js
