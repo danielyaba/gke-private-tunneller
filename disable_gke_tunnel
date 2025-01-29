@@ -54,13 +54,14 @@ spinner() {
     done
     wait $pid
     status=$?
-    output=$(cat "$LOG_FILE")
+    local OUTPUT
+    OUTPUT=$(cat "$LOG_FILE")
     if [ $status -eq 0 ]; then
       echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
       rm -f "$LOG_FILE"
     else
       echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
-      echo -e "$output"
+      echo -e "$OUTPUT"
       rm -f "$LOG_FILE"
       tput cnorm
       exit 1
