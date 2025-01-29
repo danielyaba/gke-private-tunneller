@@ -1,0 +1,129 @@
+#!/bin/bash
+
+CONFIG_FILE=""
+if [[ -n "$PRIVATE_GKE_TUNNELLER_CONFIG" ]]; then
+  CONFIG_FILE="$PRIVATE_GKE_TUNNELLER_CONFIG"
+else
+  CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
+fi
+
+parse_toml() {
+  if [[ ! -x "$(command -v tomlq)" ]]; then
+    KUBECTL_ALIASES_FILE=$(awk -F' = ' -v section="[kubectl]" -v key="aliases_file" '
+      $0 == section {found_section=1}
+      found_section && $1 == key {
+          gsub(/"/, "", $2); gsub(/^[ \t]+|[ \t]+$/, "", $2)  # Remove quotes and trim whitespace
+          print $2
+          exit
+      }
+    ' "$CONFIG_FILE")
+    HELM_ALIASES_FILE=$(awk -F' = ' -v section="[helm]" -v key="aliases_file" '
+      $0 == section {found_section=1}
+      found_section && $1 == key {
+          gsub(/"/, "", $2); gsub(/^[ \t]+|[ \t]+$/, "", $2)  # Remove quotes and trim whitespace
+          print $2
+          exit
+      }
+    ' "$CONFIG_FILE")
+  else
+    KUBECTL_ALIASES_FILE=$(tomlq '.kubectl.aliases_file' "$CONFIG_FILE")
+    HELM_ALIASES_FILE=$(tomlq '.helm.aliases_file' "$CONFIG_FILE")
+  fi
+  KUBECTL_ALIASES_FILE=$(eval echo "$KUBECTL_ALIASES_FILE")
+  HELM_ALIASES_FILE=$(eval echo "$HELM_ALIASES_FILE")
+  echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
+}
+
+spinner() {
+  local STEPS=("${@:1:$#/2}")
+  local CMDS=("${@:$#/2+1}")
+  local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+  local FRAME_INTERVAL=0.1
+  local step=0
+  tput civis
+  while [ "$step" -lt "${#CMDS[@]}" ]; do
+    LOG_FILE=/tmp/gke_tunnel_output.log
+    ${CMDS[$step]} >"$LOG_FILE" 2>&1 &
+    pid=$!
+    while ps -p $pid &>/dev/null; do
+      echo -ne "\\r[   ] ${STEPS[$step]} "
+      for k in "${!FRAME[@]}"; do
+        echo -ne "\\r[ ${FRAME[k]} ]"
+        sleep "$FRAME_INTERVAL"
+      done
+    done
+    wait $pid
+    status=$?
+    output=$(cat "$LOG_FILE")
+    if [ $status -eq 0 ]; then
+      echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
+      rm -f "$LOG_FILE"
+    else
+      echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
+      echo -e "$output"
+      rm -f "$LOG_FILE"
+      tput cnorm
+      exit 1
+    fi
+    step=$((step + 1))
+  done
+  tput cnorm
+}
+
+remove_zsh_aliases() {
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    KUBECTL_ALIASES_FILE="$RC_FILE"
+    HELM_ALIASES_FILE="$RC_FILE"
+  else
+    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<<"$(parse_toml)"
+    if [[ -z "$KUBECTL_ALIASES_FILE" ]]; then
+      KUBECTL_ALIASES_FILE="$RC_FILE"
+    fi
+    if [[ -z "$HELM_ALIASES_FILE" ]]; then
+      HELM_ALIASES_FILE="$RC_FILE"
+    fi
+  fi
+  if [[ $OSTYPE == 'darwin'* ]]; then
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectx/'kubectx/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 k9s/'k9s/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" "$HELM_ALIASES_FILE"
+  else
+    sed -i "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 kubectx/'kubectx/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 k9s/'k9s/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" "$HELM_ALIASES_FILE"
+  fi
+}
+
+disable_active_connection() {
+  if nc -z 127.0.0.1 8888 >/dev/null 2>&1; then
+    if pgrep -f '\-M \-S /tmp/sslsock' >/dev/null 2>&1; then
+      ssh -S /tmp/sslsock -O exit gke-mgmt >/dev/null 2>&1
+    fi
+  else
+    return 0
+  fi
+}
+
+echo "==============================================================="
+echo "=                   GKE-Private-Tunneller                     ="
+echo "==============================================================="
+
+RC_FILE="$HOME/.$(basename "$SHELL")"rc
+
+STEPS=(
+  "Removing GKE-TUNNEL aliases from"
+  "Disabling active GKE-TUNNEL connections"
+)
+CMDS=(
+  "remove_zsh_aliases"
+  "disable_active_connection > /dev/null 2>&1"
+)
+
+spinner "${STEPS[@]}" "${CMDS[@]}"
+echo "==============================================================="
+echo Done!
+echo "Please run 'source ${RC_FILE//$HOME/~}' to refresh aliases."

@@ -1,0 +1,55 @@
+name: ci
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  formatting-and-linting:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check changed files
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^(gke_tunnel|disable_gke_tunnel)'; then
+            echo "File changes detected, running formatting and linting."
+          else
+            echo "No relevant file changes, skipping formatting and linting."
+          fi
+      - name: Install shfmt
+        run: sudo apt-get install -y shfmt
+      - name: install shellcheck
+        run: sudo apt-get install -y shellcheck
+      - name: formatting
+        run: shfmt -i 2 -d gke_tunnel disable_gke_tunnel
+      - name: linting
+        run: shellcheck gke_tunnel disable_gke_tunnel
+    
+  semantic-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: formatting-and-linting
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          config-file: ./release.config.js
