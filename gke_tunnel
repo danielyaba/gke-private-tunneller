@@ -2,8 +2,9 @@
 
 ERROR_LOG_FILE=/tmp/gke_tunnel_errors.log
 STDOUT_LOG_FILE=/tmp/gke_tunnel_output.log
-if [[ -n $PRIVATE_GKE_TUNNELLER_CONFIG ]]; then
-  CONFIG_FILE=$PRIVATE_GKE_TUNNELLER_CONFIG
+CONFIG_FILE=""
+if [[ -n "$PRIVATE_GKE_TUNNELLER_CONFIG" ]]; then
+  CONFIG_FILE="$PRIVATE_GKE_TUNNELLER_CONFIG"
 else
   CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
 fi
@@ -26,22 +27,22 @@ parse_toml() {
           exit
       }
     ' "$CONFIG_FILE")
-    KUBECTL_ALIASES_FILE=$(eval echo $KUBECTL_ALIASES_FILE)
-    HELM_ALIASES_FILE=$(eval echo $HELM_ALIASES_FILE)
+    KUBECTL_ALIASES_FILE=$(eval echo "$KUBECTL_ALIASES_FILE")
+    HELM_ALIASES_FILE=$(eval echo "$HELM_ALIASES_FILE")
   else
     KUBECTL_ALIASES_FILE=$(tomlq '.kubectl.aliases_file' "$CONFIG_FILE")
     HELM_ALIASES_FILE=$(tomlq '.helm.aliases_file' "$CONFIG_FILE")
   fi
-  echo $KUBECTL_ALIASES_FILE $HELM_ALIASES_FILE
+  echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
 }
 
 print_usage() {
-  echo "Usage: $(basename $0) <PROJECT_ID>"
+  echo "Usage: $(basename "$0") <PROJECT_ID>"
   echo ""
   echo "Optional arguments: <GKE_CLUSTER_NAME>"
   echo ""
   echo "Examples:"
-  echo "$(basename $0) project-dev cluster-dev"
+  echo "$(basename "$0") project-dev cluster-dev"
   echo ""
   exit 1
 }
@@ -59,28 +60,28 @@ connect_to_gke_mgmt() {
 }
 
 add_zsh_aliases() {
-  if [[ ! -f $CONFIG_FILE ]]; then
-    KUBECTL_ALIASES_FILE=$RC_FILE
-    HELM_ALIASES_FILE=$RC_FILE
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    KUBECTL_ALIASES_FILE="$RC_FILE"
+    HELM_ALIASES_FILE="$RC_FILE"
   else
-    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<<$(parse_toml)
+    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<<"$(parse_toml)"
     if [[ -z "$KUBECTL_ALIASES_FILE" ]]; then
-      KUBECTL_ALIASES_FILE=$RC_FILE
+      KUBECTL_ALIASES_FILE="$RC_FILE"
     fi
     if [[ -z "$HELM_ALIASES_FILE" ]]; then
-      HELM_ALIASES_FILE=$RC_FILE
+      HELM_ALIASES_FILE="$RC_FILE"
     fi
   fi
-  echo $KUBECTL_ALIASES_FILE $HELM_ALIASES_FILE >>$DEBUG_FILE
+  echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE" >>"$DEBUG_FILE"
   if ! grep -q "alias kubectl" "$KUBECTL_ALIASES_FILE"; then
-    echo "alias kubectl was not found in $KUBECTL_ALIASES_FILE" >$ERROR_LOG_FILE
+    echo "alias kubectl was not found in ""$KUBECTL_ALIASES_FILE""" >"$ERROR_LOG_FILE"
     return 1
   fi
   if ! grep -q "alias helm" "$HELM_ALIASES_FILE"; then
-    echo "alias helm was not found in $HELM_ALIASES_FILE" >$ERROR_LOG_FILE
+    echo "alias helm was not found in $HELM_ALIASES_FILE" >"$ERROR_LOG_FILE"
     return 1
   fi
-  echo $RC_FILE >$STDOUT_LOG_FILE
+  echo "$RC_FILE" >"$STDOUT_LOG_FILE"
   if [[ $OSTYPE == 'darwin'* ]]; then
     sed -i '' "s/'kubectl/'HTTPS_PROXY=localhost:8888 kubectl/g" "$KUBECTL_ALIASES_FILE"
     sed -i '' "s/'k9s/'HTTPS_PROXY=localhost:8888 k9s/g" "$KUBECTL_ALIASES_FILE"
@@ -105,7 +106,7 @@ print_line() {
 print_options() {
   clear
   for ((i = 0; i < ${#OPTIONS[@]}; i++)); do
-    if [ $i -eq $SELECTED_INDEX ]; then
+    if [ $i -eq "$SELECTED_INDEX" ]; then
       print_line "${OPTIONS[i]}"
     else
       echo "${OPTIONS[i]}"
@@ -121,13 +122,13 @@ spinner() {
   local step=0
   tput civis
   while [ "$step" -lt "${#CMDS[@]}" ]; do
-    ${CMDS[$step]} 2>$ERROR_LOG_FILE &
+    ${CMDS[$step]} 2>"$ERROR_LOG_FILE" &
     pid=$!
     while ps -p $pid &>/dev/null; do
       echo -ne "\\r[   ] ${STEPS[$step]}"
       for k in "${!FRAME[@]}"; do
         echo -ne "\\r[ ${FRAME[k]} ]"
-        sleep $FRAME_INTERVAL
+        sleep "$FRAME_INTERVAL"
       done
     done
     wait $pid
@@ -136,21 +137,22 @@ spinner() {
       echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
     else
       echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
-      local output=$(cat $ERROR_LOG_FILE)
+      local output
+      output=$(<"$ERROR_LOG_FILE")
       echo -e "$output"
-      rm -f $ERROR_LOG_FILE
+      rm -f "$ERROR_LOG_FILE"
       tput cnorm
       exit 1
     fi
     step=$((step + 1))
-    rm -f $ERROR_LOG_FILE
+    rm -f "$ERROR_LOG_FILE"
   done
   tput cnorm
 }
 
 collect_gke_clusters() {
   gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login
-  gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}' >$STDOUT_LOG_FILE
+  gcloud container clusters list --project "$PROJECT_ID" --verbosity error | awk 'NR>1 {print $1}' >"$STDOUT_LOG_FILE"
 }
 
 select_gke_cluster() {
@@ -209,7 +211,7 @@ RC_FILE="$HOME/.$(basename "$SHELL")"rc
 nc -z 127.0.0.1 8888 2>/dev/null && echo "Tunnel to basion-host is already open!" && exit 0
 
 if [[ $# -ne 2 ]]; then
-  select_gke_cluster $PROJECT_ID
+  select_gke_cluster "$PROJECT_ID"
 else
   GKE_CLUSTER=$2
   echo "[ ✔ ] Selected GKE cluster: $GKE_CLUSTER"
@@ -230,4 +232,4 @@ spinner "${STEPS[@]}" "${CMDS[@]}"
 
 echo "==============================================================="
 echo Done!
-echo "Please run 'source $(echo "$RC_FILE" | sed "s|"$HOME"|~|g")' to refresh aliases."
+echo "Please run 'source ${RC_FILE//$HOME/~}' to refresh aliases."

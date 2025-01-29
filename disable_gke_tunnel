@@ -1,7 +1,8 @@
 #!/bin/bash
 
-if [[ -n $PRIVATE_GKE_TUNNELLER_CONFIG ]]; then
-  CONFIG_FILE=$PRIVATE_GKE_TUNNELLER_CONFIG
+CONFIG_FILE=""
+if [[ -n "$PRIVATE_GKE_TUNNELLER_CONFIG" ]]; then
+  CONFIG_FILE="$PRIVATE_GKE_TUNNELLER_CONFIG"
 else
   CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
 fi
@@ -28,9 +29,9 @@ parse_toml() {
     KUBECTL_ALIASES_FILE=$(tomlq '.kubectl.aliases_file' "$CONFIG_FILE")
     HELM_ALIASES_FILE=$(tomlq '.helm.aliases_file' "$CONFIG_FILE")
   fi
-  KUBECTL_ALIASES_FILE=$(eval echo $KUBECTL_ALIASES_FILE)
-  HELM_ALIASES_FILE=$(eval echo $HELM_ALIASES_FILE)
-  echo $KUBECTL_ALIASES_FILE $HELM_ALIASES_FILE
+  KUBECTL_ALIASES_FILE=$(eval echo "$KUBECTL_ALIASES_FILE")
+  HELM_ALIASES_FILE=$(eval echo "$HELM_ALIASES_FILE")
+  echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
 }
 
 spinner() {
@@ -42,25 +43,25 @@ spinner() {
   tput civis
   while [ "$step" -lt "${#CMDS[@]}" ]; do
     LOG_FILE=/tmp/gke_tunnel_output.log
-    ${CMDS[$step]} >$LOG_FILE 2>&1 &
+    ${CMDS[$step]} >"$LOG_FILE" 2>&1 &
     pid=$!
     while ps -p $pid &>/dev/null; do
       echo -ne "\\r[   ] ${STEPS[$step]} "
       for k in "${!FRAME[@]}"; do
         echo -ne "\\r[ ${FRAME[k]} ]"
-        sleep $FRAME_INTERVAL
+        sleep "$FRAME_INTERVAL"
       done
     done
     wait $pid
     status=$?
-    output=$(cat $LOG_FILE)
+    output=$(cat "$LOG_FILE")
     if [ $status -eq 0 ]; then
       echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
-      rm -f $LOG_FILE
+      rm -f "$LOG_FILE"
     else
       echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
       echo -e "$output"
-      rm -f $LOG_FILE
+      rm -f "$LOG_FILE"
       tput cnorm
       exit 1
     fi
@@ -70,30 +71,30 @@ spinner() {
 }
 
 remove_zsh_aliases() {
-  if [[ ! -f $CONFIG_FILE ]]; then
-    KUBECTL_ALIASES_FILE=$RC_FILE
-    HELM_ALIASES_FILE=$RC_FILE
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    KUBECTL_ALIASES_FILE="$RC_FILE"
+    HELM_ALIASES_FILE="$RC_FILE"
   else
-    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<<$(parse_toml)
+    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<<"$(parse_toml)"
     if [[ -z "$KUBECTL_ALIASES_FILE" ]]; then
-      KUBECTL_ALIASES_FILE=$RC_FILE
+      KUBECTL_ALIASES_FILE="$RC_FILE"
     fi
     if [[ -z "$HELM_ALIASES_FILE" ]]; then
-      HELM_ALIASES_FILE=$RC_FILE
+      HELM_ALIASES_FILE="$RC_FILE"
     fi
   fi
   if [[ $OSTYPE == 'darwin'* ]]; then
-    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" $KUBECTL_ALIASES_FILE
-    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" $KUBECTL_ALIASES_FILE
-    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectx/'kubectx/g" $KUBECTL_ALIASES_FILE
-    sed -i '' "s/'HTTPS_PROXY=localhost:8888 k9s/'k9s/g" $KUBECTL_ALIASES_FILE
-    sed -i '' "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" $HELM_ALIASES_FILE
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 kubectx/'kubectx/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 k9s/'k9s/g" "$KUBECTL_ALIASES_FILE"
+    sed -i '' "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" "$HELM_ALIASES_FILE"
   else
-    sed -i "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" $KUBECTL_ALIASES_FILE
-    sed -i "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" $KUBECTL_ALIASES_FILE
-    sed -i "s/'HTTPS_PROXY=localhost:8888 kubectx/'kubectx/g" $KUBECTL_ALIASES_FILE
-    sed -i "s/'HTTPS_PROXY=localhost:8888 k9s/'k9s/g" $KUBECTL_ALIASES_FILE
-    sed -i "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" $HELM_ALIASES_FILE
+    sed -i "s/'HTTPS_PROXY=localhost:8888 kubectl/'kubectl/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 kubens/'kubens/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 kubectx/'kubectx/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 k9s/'k9s/g" "$KUBECTL_ALIASES_FILE"
+    sed -i "s/'HTTPS_PROXY=localhost:8888 helm/'helm/g" "$HELM_ALIASES_FILE"
   fi
 }
 
