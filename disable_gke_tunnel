@@ -34,15 +34,15 @@ parse_toml() {
 }
 
 spinner() {
-  local STEPS=("${@:1:$# / 2}")
-  local CMDS=("${@:$# / 2 + 1}")
+  local STEPS=("${@:1:$#/2}")
+  local CMDS=("${@:$#/2+1}")
   local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
   local FRAME_INTERVAL=0.1
   local step=0
   tput civis
   while [ "$step" -lt "${#CMDS[@]}" ]; do
     LOG_FILE=/tmp/gke_tunnel_output.log
-    ${CMDS[$step]} > $LOG_FILE 2>&1 &
+    ${CMDS[$step]} >$LOG_FILE 2>&1 &
     pid=$!
     while ps -p $pid &>/dev/null; do
       echo -ne "\\r[   ] ${STEPS[$step]} "
@@ -55,14 +55,14 @@ spinner() {
     status=$?
     output=$(cat $LOG_FILE)
     if [ $status -eq 0 ]; then
-        echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
-        rm -f $LOG_FILE
+      echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
+      rm -f $LOG_FILE
     else
-        echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
-        echo -e "$output"
-        rm -f $LOG_FILE
-        tput cnorm
-        exit 1
+      echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
+      echo -e "$output"
+      rm -f $LOG_FILE
+      tput cnorm
+      exit 1
     fi
     step=$((step + 1))
   done
@@ -74,7 +74,7 @@ remove_zsh_aliases() {
     KUBECTL_ALIASES_FILE=$RC_FILE
     HELM_ALIASES_FILE=$RC_FILE
   else
-    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<< $(parse_toml) 
+    read -r KUBECTL_ALIASES_FILE HELM_ALIASES_FILE <<<$(parse_toml)
     if [[ -z "$KUBECTL_ALIASES_FILE" ]]; then
       KUBECTL_ALIASES_FILE=$RC_FILE
     fi
@@ -98,9 +98,9 @@ remove_zsh_aliases() {
 }
 
 disable_active_connection() {
-  if nc -z 127.0.0.1 8888 > /dev/null 2>&1; then
-    if pgrep -f '\-M \-S /tmp/sslsock' > /dev/null 2>&1; then
-      ssh -S /tmp/sslsock -O exit gke-mgmt > /dev/null 2>&1
+  if nc -z 127.0.0.1 8888 >/dev/null 2>&1; then
+    if pgrep -f '\-M \-S /tmp/sslsock' >/dev/null 2>&1; then
+      ssh -S /tmp/sslsock -O exit gke-mgmt >/dev/null 2>&1
     fi
   else
     return 0
