@@ -1,4 +1,5 @@
 # GKE-Private-Tunneller
+
 The guide shows how to connect to a private GKE cluster, leveraging a proxy and an IAP tunnel on Google cloud.  
 
 What do you do when you've deployed a private GKE cluster and you want to access it from your own local machine but you don't have a zero-trust infrastructure installed on your GKE cluster ?  
@@ -73,8 +74,8 @@ We should see an output of all namespaces in our private GKE cluster.
 sudo cp gke_tunnel disable_gke_tunnel /usr/local/bin/
 sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 ```
-This version of script pointing to aliases files in `~/.config/zsh/aliases/kubectl_aliases.zsh`.  
-You should edit `gke_tunnel` script under `add_zsh_aliases` function and change the path to the file that contains your kubectl aliases under `KUBECTL_ALISES_FILE`.  
+
+You can use symlink a custom aliases file. Check [Custom configuration file](#Configuration File)
 
 #### Using _gke_tunnel_ script
 _gke_tunnel_ script is designed to connect to a vm-instance named `gke-mgmt` in the same project as the GKE private cluster.  
