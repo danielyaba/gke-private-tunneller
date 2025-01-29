@@ -137,9 +137,9 @@ spinner() {
       echo -ne "\\r[ ✔ ] ${STEPS[$step]}\\n"
     else
       echo -ne "\\r[ X ] ${STEPS[$step]}\\n"
-      local output
-      output=$(<"$ERROR_LOG_FILE")
-      echo -e "$output"
+      local OUTPUT
+      OUTPUT=$(<"$ERROR_LOG_FILE")
+      echo -e "$OUTPUT"
       rm -f "$ERROR_LOG_FILE"
       tput cnorm
       exit 1
