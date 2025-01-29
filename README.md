@@ -28,7 +28,6 @@ alias kdp='kubectl describe pods'
 alias kubens='kubens'
 ```
 
-
 ## Install TinyProxy VM-Instance
 #### Deploying With Terraform
 You can use the Terraform code in the directory `./terraform` to deploy the vm-instance which installs TinyProxy.  
