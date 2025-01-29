@@ -8,8 +8,8 @@ on:
       - main
 
 jobs:
-  runs-on: ubuntu-latest
   formatting-and-linting:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,6 +25,7 @@ jobs:
         run: shellcheck **/*.sh
     
   semantic-release:
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
