@@ -2,25 +2,27 @@
 
 ![My Script Logo](assets/logo.png)
 
-The guide shows how to connect to a private GKE cluster, leveraging a proxy and an IAP tunnel on Google cloud.  
+This guide shows how to connect to a private GKE cluster, using a proxy and an IAP tunnel on Google Cloud.
 
-What do you do when you've deployed a private GKE cluster and you want to access it from your own local machine but you don't have a zero-trust infrastructure installed on your GKE cluster ?  
-This is when tinyproxy comes to the rescue
+When you deploy a private GKE cluster and need to access it from your local machine but don’t have a zero-trust infrastructure in place, TinyProxy can help. This tool will enable access to your cluster via a proxy, allowing secure connections.
 
 ### Pre-Requisuites
-1. Ensure those tools are installed on your local machine:
-  * [kubectl](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
-  * [gcloud](https://cloud.google.com/sdk/docs/install)
-  * [gke-gcloud-auth-plugin](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
-  * [helm](https://helm.sh/)
 
-2. Ensure those aliases are configured in your `~/.bashrc` or `~/.zshrc` file:
-```
+Before proceeding, make sure you have the following tools installed:
+1. [kubectl](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+2. [gcloud](https://cloud.google.com/sdk/docs/install)
+3. [gke-gcloud-auth-plugin](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+4. [helm](https://helm.sh/)
+
+Also, ensure the following aliases are set up in your ~/.bashrc or ~/.zshrc:
+GKE-Private-Tunneller searches for `kubectl` aliases and modifies them to `HTTPS_PROXY=localhost:8888 kubectl`.   
+```bash
 alias kubectl='kubectl'
 alias helm='helm'
 ```
-Also you can add some other aliases of `kubectl` which might be useful:
-```
+
+You can also add more aliases for convenience:
+```bash
 alias k='kubectl'
 alias ka='kubectl apply -f'
 alias kd='kubectl describe'
@@ -34,13 +36,12 @@ alias k9s='k9s'
 
 ## Install TinyProxy VM-Instance
 #### Deploying With Terraform
-You can use the Terraform code in the directory `./terraform` to deploy the vm-instance which installs TinyProxy.  
-Fill free to adjust the code to your needs and add it to your infrastrcture code. 
+You can deploy the TinyProxy VM instance using the Terraform code in the ./terraform directory.  
+Feel free to adjust the code to fit your infrastructure.  
 
 #### Manual Installation
-After installing the bastion host (a vm-instance) inside the same VPC of the GKE cluster which has connectivity to the Kubernets API server all we need to do on the bastion is just to install TinyProxy and add `allow 'localhost'` in the TinyProxy config file.  
-
-```
+If you prefer a manual approach, you can set up a bastion host (a VM instance in the same VPC as the GKE cluster) and install TinyProxy:
+```bash
 apt update
 apt install -y tinyproxy
 grep -qxF ‘Allow localhost’ /etc/tinyproxy/tinyproxy.conf || echo ‘Allow localhost’ >> /etc/tinyproxy/tinyproxy.conf
@@ -48,55 +49,57 @@ service tinyproxy restart
 ```
 
 ## Connect To GKE
-1.  Add the GKE cluster to your kubeconfig on your local machine
-```
+1.  Add the GKE cluster to your kubeconfig:  
+```bash
 gcloud container clusters get-credentials <GKE_CLUSTER_NAME> \
   --zone <GKE_CLUSTER_ZONE> \
   --project <GKE_CLUSTER_PROJECT> \
   --internal-ip
 ``` 
 
-2. Create a tunnel to the bastion host using Google IAP tunnel
-```
+2. Create a tunnel to the bastion host via the IAP tunnel:
+```bash
 gcloud compute ssh gke-mgmt \
   --project <BASTION_HOST_PROJECT> \
   --zone <BASTION_HOST_ZONE> \
   -- -L 8888:localhost:8888 -N -q -f
 ```
 
-3. Access the GKE API with kubectl commands using the proxy  
-```
+3. Access the GKE API with kubectl through the proxy:
+```bash
 HTTPS_PROXY=localhost:8888 kubectl get namespaces
 ```
-We should see an output of all namespaces in our private GKE cluster.  
+
+You should now see the namespaces in your private GKE cluster.  
 
 ## Using Some Automation
 #### Prepare scripts
-```
+To automate the process, you can copy the following scripts to /usr/local/bin/:  
+```bash
 sudo cp gke_tunnel disable_gke_tunnel /usr/local/bin/
 sudo chmod +x /usr/local/bin/gke_tunnel /usr/local/bin/disable_gke_tunnel
 ```
 
-You can use symlink a custom aliases file. Check [Custom configuration file](#configuration-file).   
+You can also use symlinks with a custom aliases file. Check [Custom configuration file](#configuration-file) section for more details.   
 
 #### Using _gke_tunnel_ script
-_gke_tunnel_ script is designed to connect to a vm-instance named `gke-mgmt` in the same project as the GKE private cluster.  
-It connects to `gke-mgmt` through the IAP tunnel and edit all kubectl, kubens and helm aliases.  
-If `cluster_name` was provided to the script as second argument the script will connect directly to this cluster.  
-If `cluster_name` wasn't provided, then the script will let you choose a cluster from the project provided.  
-```
+The gke_tunnel script connects to the gke-mgmt VM instance and sets up the proxy tunnel. It will automatically update the kubectl, kubens, and helm aliases to route traffic through the proxy.  
+If a cluster_name is provided as a second argument, the script will connect to that specific cluster. If not, it will allow you to choose from available clusters in the project.
+Example usage:
+```bash
 gke_tunnel --project_id=<BASTION_HOST_PROJECT> --cluster_name=<GKE_CLUSTER_NAME>
 ```
 
 #### Using _disable_gke_tunnel_ script
-_disable_gke_tunnel_ script shuts the tunnel down and edit kubectl, kubens and helm aliases to be without the `HTTPS_PROXY=localhost:8888`
-```
+To shut down the tunnel and reset the aliases:
+```bash
 disable_gke_tunnel
 ```
 
 #### Configuration File
-In case you're using symlinks and your aliases are not specified in `~/.zshrc` or `~/.bashrc` you can use configuration file.   
-By default this script supports configuration file in `~/.config/private-gke-tunneller/config.toml` configured as follows:
+If you prefer using symlinks or have custom alias files not located in ~/.bashrc or ~/.zshrc, you can use a configuration file.   
+By default, the script looks for a configuration file at ~/.config/private-gke-tunneller/config.toml.  
+Example configuration:
 ```
 [kubectl]
 aliases_file = "path/to/aliases-file"
@@ -105,10 +108,9 @@ aliases_file = "path/to/aliases-file"
 aliases_file = "path/to/aliases-file"
 ```
 
-This way the script will use those file paths to replace the aliases.   
-If configuration file doesn't exists if will fallback to your default  `~/.zshrc` or `~/.bashrc`.   
+If this configuration file is missing, the script will fall back to the default ~/.bashrc or ~/.zshrc files.   
 
-If you would preffer to use a custom path for configuration file you can add this line to your `~/.zshrc` or `~/.bashrc`:   
+If you want to use a custom path for the configuration file, you can set the following in your ~/.bashrc or ~/.zshrc:
 ```bash
 export PRIVATE_GKE_TUNNELLER_CONFIG="<path/to/config-file.toml>"
 ```
