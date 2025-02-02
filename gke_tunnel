@@ -37,12 +37,13 @@ parse_toml() {
 }
 
 print_usage() {
-  echo "Usage: $(basename "$0") <PROJECT_ID>"
+  echo "Usage: $(basename "$0") --project_id=<PROJECT_ID>"
   echo ""
-  echo "Optional arguments: <GKE_CLUSTER_NAME>"
+  echo "Optional arguments: --cluster_name=<GKE_CLUSTER_NAME>"
   echo ""
   echo "Examples:"
-  echo "$(basename "$0") project-dev cluster-dev"
+  echo "$(basename "$0") --project_id=project-dev"
+  echo "$(basename "$0") --project_id=project-dev --cluster_name=cluster-dev"
   echo ""
   exit 1
 }
@@ -157,7 +158,7 @@ collect_gke_clusters() {
 
 select_gke_cluster() {
   local STEPS=(
-    "Collecting GKE clsuters from project $PROJECT_ID"
+    "Collecting GKE cluters from project $PROJECT_ID"
   )
   local CMDS=(
     "collect_gke_clusters $PROJECT_ID"
@@ -203,17 +204,57 @@ echo "==============================================================="
 echo "=                   GKE-Private-Tunneller                     ="
 echo "==============================================================="
 
-PROJECT_ID="$1"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -p=*|--project_id=*)  # Handles --project_id=value or -p=value
+      project_id="${1#*=}"
+      shift
+      ;;
+    -p|--project_id)  # Handles --project_id value or -p value
+      if [[ -n "$2" && ! "$2" =~ ^- ]]; then
+        project_id="$2"
+        shift 2
+      else
+        echo "Error: Missing value for $1"
+        print_usage
+      fi
+      ;;
+    -c=*|--cluster_name=*)  # Handles --cluster_name=value or -c=value
+      cluster_name="${1#*=}"
+      shift
+      ;;
+    -c|--cluster_name)  # Handles --cluster_name value or -c value
+      if [[ -n "$2" && ! "$2" =~ ^- ]]; then
+        cluster_name="$2"
+        shift 2
+      else
+        echo "Error: Missing value for $1"
+        print_usage
+      fi
+      ;;
+    *)
+      echo "Error: Unknown argument $1"
+      print_usage
+      ;;
+  esac
+done
+
+if [[ -z "$project_id" ]]; then
+  print_usage
+fi
+
+PROJECT_ID="$project_id"
 RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
-[[ -z "$PROJECT_ID" ]] && print_usage
+# [[ -z "$PROJECT_ID" ]] && print_usage
 nc -z 127.0.0.1 8888 2>/dev/null && echo "Tunnel to basion-host is already open!" && exit 0
 
-if [[ $# -ne 2 ]]; then
-  select_gke_cluster "$PROJECT_ID"
+# if [[ $# -ne 2 ]]; then
+if [[ -z "$cluster_name" ]]; then
+  select_gke_cluster "$project_id"
 else
-  GKE_CLUSTER=$2
+  GKE_CLUSTER="$cluster_name"
   echo "[ ✔ ] Selected GKE cluster: $GKE_CLUSTER"
 fi
 
