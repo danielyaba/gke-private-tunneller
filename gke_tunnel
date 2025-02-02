@@ -204,7 +204,7 @@ echo "==============================================================="
 echo "=                   GKE-Private-Tunneller                     ="
 echo "==============================================================="
 
-while [[ $# -gt 0 ]]; do
+while [[ "$#" -gt 0 ]]; do
   case "$1" in
     -p=*|--project_id=*)  # Handles --project_id=value or -p=value
       project_id="${1#*=}"
