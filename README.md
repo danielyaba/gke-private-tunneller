@@ -29,6 +29,7 @@ alias kl='kubectl logs'
 alias kgp='kubectl get pods'
 alias kdp='kubectl describe pods'
 alias kubens='kubens'
+alias k9s='k9s'
 ```
 
 ## Install TinyProxy VM-Instance
@@ -81,10 +82,10 @@ You can use symlink a custom aliases file. Check [Custom configuration file](#co
 #### Using _gke_tunnel_ script
 _gke_tunnel_ script is designed to connect to a vm-instance named `gke-mgmt` in the same project as the GKE private cluster.  
 It connects to `gke-mgmt` through the IAP tunnel and edit all kubectl, kubens and helm aliases.  
-If _GKE_CLUSTER_NAME_ was provided to the script as second argument the script will connect directly to this cluster.  
-If _GKE_CLUSTER_NAME_ wasn't provided, then the script will let you choose a cluster from the project provided.  
+If `cluster_name` was provided to the script as second argument the script will connect directly to this cluster.  
+If `cluster_name` wasn't provided, then the script will let you choose a cluster from the project provided.  
 ```
-gke_tunnel <BASTION_HOST_PROJECT> <GKE_CLUSTER_NAME>
+gke_tunnel --project_id=<BASTION_HOST_PROJECT> --cluster_name=<GKE_CLUSTER_NAME>
 ```
 
 #### Using _disable_gke_tunnel_ script
