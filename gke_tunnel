@@ -206,36 +206,36 @@ echo "==============================================================="
 
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    -p=*|--project_id=*)  # Handles --project_id=value or -p=value
-      project_id="${1#*=}"
-      shift
-      ;;
-    -p|--project_id)  # Handles --project_id value or -p value
-      if [[ -n "$2" && ! "$2" =~ ^- ]]; then
-        project_id="$2"
-        shift 2
-      else
-        echo "Error: Missing value for $1"
-        print_usage
-      fi
-      ;;
-    -c=*|--cluster_name=*)  # Handles --cluster_name=value or -c=value
-      cluster_name="${1#*=}"
-      shift
-      ;;
-    -c|--cluster_name)  # Handles --cluster_name value or -c value
-      if [[ -n "$2" && ! "$2" =~ ^- ]]; then
-        cluster_name="$2"
-        shift 2
-      else
-        echo "Error: Missing value for $1"
-        print_usage
-      fi
-      ;;
-    *)
-      echo "Error: Unknown argument $1"
+  -p=* | --project_id=*) # Handles --project_id=value or -p=value
+    project_id="${1#*=}"
+    shift
+    ;;
+  -p | --project_id) # Handles --project_id value or -p value
+    if [[ -n "$2" && ! "$2" =~ ^- ]]; then
+      project_id="$2"
+      shift 2
+    else
+      echo "Error: Missing value for $1"
       print_usage
-      ;;
+    fi
+    ;;
+  -c=* | --cluster_name=*) # Handles --cluster_name=value or -c=value
+    cluster_name="${1#*=}"
+    shift
+    ;;
+  -c | --cluster_name) # Handles --cluster_name value or -c value
+    if [[ -n "$2" && ! "$2" =~ ^- ]]; then
+      cluster_name="$2"
+      shift 2
+    else
+      echo "Error: Missing value for $1"
+      print_usage
+    fi
+    ;;
+  *)
+    echo "Error: Unknown argument $1"
+    print_usage
+    ;;
   esac
 done
 
