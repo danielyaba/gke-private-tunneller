@@ -116,7 +116,7 @@ echo "==============================================================="
 RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 STEPS=(
-  "Removing GKE-TUNNEL aliases from"
+  "Removing GKE-TUNNEL aliases"
   "Disabling active GKE-TUNNEL connections"
 )
 CMDS=(
