@@ -51,13 +51,19 @@ print_usage() {
 connect_to_gke_mgmt() {
   gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login
   PROJECT_ID="$1"
-  gcloud compute ssh gke-mgmt \
-    --project="$PROJECT_ID" \
-    --zone=me-west1-a \
-    --tunnel-through-iap \
-    --no-user-output-enabled \
-    -- -M -S /tmp/sslsock \
-    -L 8888:localhost:8888 -N -q -f
+  local STATUS=$(gcloud compute instances list --filter="name='gke-mgmt'"  --project="$PROJECT_ID" | awk 'NR>1 {print $6}')
+  if [[ "$STATUS" == "TERMINATED" ]]; then
+    echo "gke-mgmt instance is "$STATUS". Start the machine and try again" >"$ERROR_LOG_FILE"
+    return 1
+  else
+    gcloud compute ssh gke-mgmt \
+      --project="$PROJECT_ID" \
+      --zone=me-west1-a \
+      --tunnel-through-iap \
+      --no-user-output-enabled \
+      -- -M -S /tmp/sslsock \
+      -L 8888:localhost:8888 -N -q -f
+  fi
 }
 
 add_zsh_aliases() {
