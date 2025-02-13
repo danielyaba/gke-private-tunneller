@@ -3,7 +3,6 @@
 # Global Variables
 ERROR_LOG_FILE=/tmp/gke_tunnel_errors.log
 STDOUT_LOG_FILE=/tmp/gke_tunnel_output.log
-# CONFIG_FILE=""
 if [[ -n "$PRIVATE_GKE_TUNNELLER_CONFIG" ]]; then
   CONFIG_FILE="$PRIVATE_GKE_TUNNELLER_CONFIG"
 else
@@ -39,7 +38,7 @@ parse_toml() {
     KUBECTL_ALIASES_FILE=$(tomlq '.kubectl.aliases_file' "$CONFIG_FILE")
     HELM_ALIASES_FILE=$(tomlq '.helm.aliases_file' "$CONFIG_FILE")
   fi
-  # echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
+  echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
 }
 
 print_usage() {
@@ -78,7 +77,6 @@ connect_to_gke_mgmt() {
       return 1
     fi
   fi
-  # echo "TinyProxy is active, connecting to gke-mgmt" >"$STDOUT_LOG_FILE"
   gcloud compute ssh gke-mgmt \
     --project="$PROJECT_ID" \
     --zone=me-west1-a \
@@ -126,11 +124,11 @@ add_zsh_aliases() {
   fi
 }
 
-print_line() {
-  local yellow="\033[0;33m"
-  local reset="\033[0m"
-  echo -e "${yellow}$1${reset}"
-}
+# print_line() {
+#   local yellow="\033[0;33m"
+#   local reset="\033[0m"
+#   echo -e "${yellow}$1${reset}"
+# }
 
 print_options() {
   clear
@@ -144,8 +142,6 @@ print_options() {
 }
 
 spinner() {
-  # local STEPS=("${@:1:$#/2}")
-  # local CMDS=("${@:$#/2+1}")
   local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
   local FRAME_INTERVAL=0.1
   local step=0
@@ -270,8 +266,6 @@ done
 if [[ -z "$PROJECT_ID" ]]; then
   print_usage
 fi
-
-# RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 nc -z 127.0.0.1 8888 2>/dev/null && echo "Tunnel to basion-host is already open!" && exit 0
