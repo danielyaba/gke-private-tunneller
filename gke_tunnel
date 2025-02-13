@@ -51,9 +51,10 @@ print_usage() {
 connect_to_gke_mgmt() {
   gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login
   PROJECT_ID="$1"
-  local STATUS=$(gcloud compute instances list --filter="name='gke-mgmt'"  --project="$PROJECT_ID" | awk 'NR>1 {print $6}')
+  local STATUS=$(gcloud compute instances describe gke-mgmt --zone=me-west1-a --project=$PROJECT_ID --format="get(status)")
   if [[ "$STATUS" == "TERMINATED" ]]; then
-    echo "gke-mgmt instance is "$STATUS". Start the machine and try again" >"$ERROR_LOG_FILE"
+    gcloud compute compute instances start gke-mgmt --zone=me-west1-a --pro
+    echo "gke-mgmt instance is "$STATUS". Start the machine, wait until TinyProxy process to be active and try again" >"$ERROR_LOG_FILE"
     return 1
   else
     gcloud compute ssh gke-mgmt \
