@@ -1,13 +1,19 @@
 #!/bin/bash
 
+# Global Variables
 ERROR_LOG_FILE=/tmp/gke_tunnel_errors.log
 STDOUT_LOG_FILE=/tmp/gke_tunnel_output.log
-CONFIG_FILE=""
+# CONFIG_FILE=""
 if [[ -n "$PRIVATE_GKE_TUNNELLER_CONFIG" ]]; then
   CONFIG_FILE="$PRIVATE_GKE_TUNNELLER_CONFIG"
 else
   CONFIG_FILE="$HOME/.config/private-gke-tunneller/config.toml"
 fi
+PROJECT_ID=""
+GKE_CLUSTER=""
+RC_FILE="$HOME/.$(basename "$SHELL")rc"
+KUBECTL_ALIASES_FILE=""
+HELM_ALIASES_FILE=""
 
 parse_toml() {
   if [[ ! -x "$(command -v tomlq)" ]]; then
@@ -33,7 +39,7 @@ parse_toml() {
     KUBECTL_ALIASES_FILE=$(tomlq '.kubectl.aliases_file' "$CONFIG_FILE")
     HELM_ALIASES_FILE=$(tomlq '.helm.aliases_file' "$CONFIG_FILE")
   fi
-  echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
+  # echo "$KUBECTL_ALIASES_FILE" "$HELM_ALIASES_FILE"
 }
 
 print_usage() {
@@ -51,20 +57,35 @@ print_usage() {
 connect_to_gke_mgmt() {
   gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login
   PROJECT_ID="$1"
-  local STATUS=$(gcloud compute instances describe gke-mgmt --zone=me-west1-a --project=$PROJECT_ID --format="get(status)")
+  local STATUS
+  STATUS=$(gcloud compute instances describe gke-mgmt --zone=me-west1-a --project="$PROJECT_ID" --format="get(status)")
   if [[ "$STATUS" == "TERMINATED" ]]; then
-    gcloud compute compute instances start gke-mgmt --zone=me-west1-a --pro
-    echo "gke-mgmt instance is "$STATUS". Start the machine, wait until TinyProxy process to be active and try again" >"$ERROR_LOG_FILE"
-    return 1
-  else
-    gcloud compute ssh gke-mgmt \
-      --project="$PROJECT_ID" \
-      --zone=me-west1-a \
-      --tunnel-through-iap \
-      --no-user-output-enabled \
-      -- -M -S /tmp/sslsock \
-      -L 8888:localhost:8888 -N -q -f
+    gcloud compute instances start gke-mgmt --zone=me-west1-a --project="$PROJECT_ID"
+    local ELAPSED=0
+    local TIMEOUT=10
+    local INTERVAL=1
+    while [[ $ELAPSED -lt $TIMEOUT ]]; do
+      local TINYPROXY_STATUS
+      TINYPROXY_STATUS=$(gcloud compute ssh gke-mgmt --zone=me-west1-a --project="$PROJECT_ID" --command "systemctl is-active tinyproxy" 2>/dev/null)
+      if [[ "$TINYPROXY_STATUS" == "active" ]]; then
+        break
+      fi
+      sleep "$INTERVAL"
+      ((ELAPSED += INTERVAL))
+    done
+    if [[ "$TINYPROXY_STATUS" != "active" ]]; then
+      echo "Please verify TinyProxy process is active and try again" >"$ERROR_LOG_FILE"
+      return 1
+    fi
   fi
+  # echo "TinyProxy is active, connecting to gke-mgmt" >"$STDOUT_LOG_FILE"
+  gcloud compute ssh gke-mgmt \
+    --project="$PROJECT_ID" \
+    --zone=me-west1-a \
+    --tunnel-through-iap \
+    --no-user-output-enabled \
+    -- -M -S /tmp/sslsock \
+    -L 8888:localhost:8888 -N -q -f
 }
 
 add_zsh_aliases() {
@@ -123,8 +144,8 @@ print_options() {
 }
 
 spinner() {
-  local STEPS=("${@:1:$#/2}")
-  local CMDS=("${@:$#/2+1}")
+  # local STEPS=("${@:1:$#/2}")
+  # local CMDS=("${@:$#/2+1}")
   local FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
   local FRAME_INTERVAL=0.1
   local step=0
@@ -250,7 +271,7 @@ if [[ -z "$PROJECT_ID" ]]; then
   print_usage
 fi
 
-RC_FILE="$HOME/.$(basename "$SHELL")"rc
+# RC_FILE="$HOME/.$(basename "$SHELL")"rc
 
 [[ ! -x "$(command -v gcloud)" ]] && printf "gcloud not found, you need to install gcloud first" && exit 1
 nc -z 127.0.0.1 8888 2>/dev/null && echo "Tunnel to basion-host is already open!" && exit 0
